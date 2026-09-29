@@ -18,7 +18,7 @@ jobs:
       - name: Build Web
         run: |
           flutter pub get
-          flutter build web --release --base-href "/asrar_elriyada/"
+          flutter build web --release --base-href "/asrar.elriyada/"
       
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
