@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,10 +15,12 @@ jobs:
           flutter-version: '3.x'
           channel: 'stable'
           
-      - run: flutter pub get
-      - run: flutter build web --release --base-href "/asrar_elriyada/"
+      - name: Build Web
+        run: |
+          flutter pub get
+          flutter build web --release --base-href "/asrar_elriyada/"
       
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
