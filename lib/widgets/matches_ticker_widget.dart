@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../match_details_screen.dart';
 
 class MatchesTickerWidget extends StatefulWidget {
-  final String selectedDayKey; // يستقبل اليوم المختار من البانر العلوي
+  final String selectedDayKey;
 
   const MatchesTickerWidget({super.key, this.selectedDayKey = 'today'});
 
@@ -23,7 +23,7 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
     } else if (widget.selectedDayKey == 'tomorrow') {
       targetDate = now.add(const Duration(days: 1));
     } else {
-      targetDate = now; // اليوم
+      targetDate = now;
     }
 
     String year = targetDate.year.toString();
@@ -33,7 +33,6 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
     return '$year-$month-$day';
   }
 
-  // دالة تحريك الشريط يميناً ويساراً عند الضغط على أزرار السحب
   void _scroll(bool toRight) {
     double offset = toRight ? 300.0 : -300.0;
     if (_scrollController.hasClients) {
@@ -45,7 +44,6 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
     }
   }
 
-  // دالة لتنسيق وقت البدء (startTime) من الـ Timestamp
   String _formatStartTime(dynamic startTimeField) {
     if (startTimeField == null) return '';
     try {
@@ -67,7 +65,6 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
     }
   }
 
-  // دالة ذكية لتحويل الحالة أو عرض الوقت المناسب بالعربي
   String _getArabicStatus(Map<String, dynamic> matchData) {
     final rawStatus = matchData['status'];
     final startTimeField = matchData['startTime'];
@@ -79,22 +76,18 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
 
     String status = rawStatus.toString().toLowerCase();
 
-    // لو الحالة لسه لم تبدأ أو قادمة، اعرض التوقيت المظبوط
     if (status.contains('قادم') || status == 'ns' || status == 'tbd' || status.isEmpty) {
       return timeFormatted.isNotEmpty ? timeFormatted : rawStatus.toString();
     }
     
-    // حالات المباراة الحية
-    if (status.contains('جارية') || status == '1h' || status == '2h' || status == 'et' || status == 'p' || status == 'live') {
+    if (status.contains('جارية') || status == '1h' || status == '2h' || status == 'et' || status == 'p' || status.contains('live')) {
       return 'جارية الان';
     }
     
-    // فترة الاستراحة
     if (status.contains('استراحة') || status == 'ht') {
       return 'استراحة';
     }
     
-    // انتهاء المباراة
     if (status.contains('انتهت') || status == 'ft' || status == 'aet' || status == 'pen') {
       return 'انتهت';
     }
@@ -106,7 +99,6 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
-
     String targetDateQuery = _getTargetDateString();
 
     return Container(
@@ -120,14 +112,10 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
         textDirection: TextDirection.rtl,
         child: Row(
           children: [
-            // زر السحب الأول (يمين / يسار حسب الاتجاه)
             IconButton(
               onPressed: () => _scroll(false),
               icon: const Icon(Icons.arrow_forward_ios, color: Colors.amber, size: 18),
-              tooltip: 'السحب اتجاه اليمين',
             ),
-
-            // قائمة المباريات الأفقية
             Expanded(
               child: SizedBox(
                 height: isMobile ? 85 : 75,
@@ -148,16 +136,17 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text(
-                          'لا توجد مباريات مسجلة لـ ${widget.selectedDayKey == 'today' ? 'اليوم' : (widget.selectedDayKey == 'yesterday' ? 'أمس' : 'غداً')}',
-                          style: const TextStyle(color: Colors.grey, fontSize: 13),
+                          'لا توجد مباريات مسجلة',
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
                         ),
                       );
                     }
 
-                    // ترتيب المباريات تصاعدياً حسب وقت البدء (startTime)
                     final docs = List.from(snapshot.data!.docs);
+                    
+                    // الترتيب الزمني الصحيح: الأبكر أولاً (تصاعدياً)
                     docs.sort((a, b) {
                       final timeA = (a.data() as Map<String, dynamic>)['startTime'];
                       final timeB = (b.data() as Map<String, dynamic>)['startTime'];
@@ -175,10 +164,10 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
                     return ListView.builder(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
+                      reverse: false, // اتجاه طبيعي بدون عكس
                       itemCount: docs.length,
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
-
                         return Padding(
                           padding: EdgeInsets.only(left: isMobile ? 8.0 : 12.0),
                           child: _buildMatchCard(
@@ -193,12 +182,9 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
                 ),
               ),
             ),
-
-            // زر السحب الثاني (الاتجاه الآخر)
             IconButton(
               onPressed: () => _scroll(true),
               icon: const Icon(Icons.arrow_back_ios, color: Colors.amber, size: 18),
-              tooltip: 'السحب اتجاه اليسار',
             ),
           ],
         ),
@@ -230,7 +216,7 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
         );
       },
       child: Container(
-        width: isMobile ? 180 : 220,
+        width: isMobile ? 190 : 230,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: const Color(0xFF2A2A2A),
@@ -242,11 +228,7 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
           children: [
             Text(
               tournament,
-              style: TextStyle(
-                color: Colors.amber,
-                fontSize: isMobile ? 10 : 11,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.amber, fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

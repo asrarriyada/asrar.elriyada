@@ -100,11 +100,13 @@ class _TeamsTickerWidgetState extends State<TeamsTickerWidget> {
 
   void _scroll(bool right) {
     final double offset = right ? 250 : -250;
-    _scrollController.animateTo(
-      _scrollController.offset + offset,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.offset + offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
