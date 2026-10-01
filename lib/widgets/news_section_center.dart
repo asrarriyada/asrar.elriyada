@@ -47,7 +47,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         final subNews = newsDocs.skip(1).take(4).toList();
         final titlesList = newsDocs.map((doc) => (doc.data() as Map<String, dynamic>)['title'] ?? '').toList().cast<String>();
 
-        // تصميم بطاقة الخبر الفرعي المنفصلة لتجنب التكرار
         Widget buildSubNewsItem(Map<String, dynamic> newsData) {
           return InkWell(
             onTap: () => _openNewsDetails(context, newsData),
@@ -114,8 +113,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
             children: [
               BreakingNewsTicker(titles: titlesList),
               const SizedBox(height: 10),
-
-              // التحقق من عرض الشاشة: إذا كان موبايل نعرضهم تحت بعض، وإذا كمبيوتر نعرضهم جنباً إلى جنب
               isMobile
                   ? Column(
                       children: [
@@ -179,7 +176,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
 
   Widget _buildNewsImage(dynamic img) {
     String url = (img ?? '').toString().trim();
-    
     if (url.startsWith('data:image')) {
       try {
         final base64Str = url.split(',').last;
@@ -191,7 +187,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         );
       } catch (_) {}
     }
-
     if (url.isNotEmpty && url.startsWith('http')) {
       return Image.network(
         url,
@@ -199,7 +194,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         errorBuilder: (context, error, stackTrace) => _errorImagePlaceholder(),
       );
     }
-    
     return _errorImagePlaceholder();
   }
 
