@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'home_screen.dart';
-import 'widgets/welcome_clock_overlay.dart'; // استيراد ملف الساعة الترحيبية المنفصل
+import 'screens/direct_article_screen.dart'; // استيراد صفحة عرض المقال المباشر
+import 'widgets/welcome_clock_overlay.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,11 +18,25 @@ void main() async {
     ),
   );
 
-  runApp(const AsrarElriyadaApp());
+  // التقاط رابط الـ URL ومعرفة إذا كان هناك مقال مطلوب فتحه مباشرة
+  String? articleTitleParam;
+  try {
+    final uri = Uri.base;
+    // نفحص لو الرابط يحتوي على باراميتر 'title' أو 'code'
+    if (uri.queryParameters.containsKey('title')) {
+      articleTitleParam = uri.queryParameters['title'];
+    } else if (uri.queryParameters.containsKey('code')) {
+      articleTitleParam = uri.queryParameters['code'];
+    }
+  } catch (_) {}
+
+  runApp(AsrarElriyadaApp(initialArticleTitle: articleTitleParam));
 }
 
 class AsrarElriyadaApp extends StatelessWidget {
-  const AsrarElriyadaApp({super.key});
+  final String? initialArticleTitle;
+
+  const AsrarElriyadaApp({super.key, this.initialArticleTitle});
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +47,12 @@ class AsrarElriyadaApp extends StatelessWidget {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
       ),
-      // ربط الساعة الترحيبية الشفافة بكلمة ASE فوق الموقع
-      home: const WelcomeClockOverlay(
-        child: HomeScreen(),
-      ),
+      // المنطق الذكي: لو فيه رابط مقال في الـ URL افتح شاشة المقال مباشرة، وإلا افتح الرئيسية بشكل طبيعي تماماً
+      home: initialArticleTitle != null && initialArticleTitle!.isNotEmpty
+          ? DirectArticleScreen(articleTitle: initialArticleTitle!)
+          : const WelcomeClockOverlay(
+              child: HomeScreen(),
+            ),
     );
   }
 }
