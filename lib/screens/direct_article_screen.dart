@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import '../home_screen.dart';
 import '../widgets/app_header.dart';
 
@@ -8,6 +11,18 @@ class DirectArticleScreen extends StatelessWidget {
   final String articleTitle;
 
   const DirectArticleScreen({super.key, required this.articleTitle});
+
+  void _navigateToHome(BuildContext context) {
+    if (kIsWeb) {
+      try {
+        html.window.history.pushState({}, '', './');
+      } catch (_) {}
+    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +63,15 @@ class DirectArticleScreen extends StatelessWidget {
             }
 
             final newsData = matchedData;
+            final actualTitle = newsData['title'] ?? '';
+
+            // تحديث رابط المتصفح ديناميكياً برابط الخبر الفعلي
+            if (kIsWeb && actualTitle.isNotEmpty) {
+              try {
+                final encodedTitle = Uri.encodeComponent(actualTitle);
+                html.window.history.pushState({}, '', '?title=$encodedTitle');
+              } catch (_) {}
+            }
 
             return SingleChildScrollView(
               child: Column(
@@ -66,10 +90,7 @@ class DirectArticleScreen extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton.icon(
-                                onPressed: () => Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                                ),
+                                onPressed: () => _navigateToHome(context),
                                 icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
                                 label: const Text(
                                   'الرئيسية',
@@ -112,7 +133,7 @@ class DirectArticleScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
-                                    newsData['title'] ?? 'بدون عنوان',
+                                    actualTitle.isNotEmpty ? actualTitle : 'بدون عنوان',
                                     style: const TextStyle(
                                       fontSize: 26,
                                       fontWeight: FontWeight.bold,
@@ -200,10 +221,7 @@ class DirectArticleScreen extends StatelessWidget {
               backgroundColor: const Color(0xFFB71C1C),
               foregroundColor: Colors.white,
             ),
-            onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-            ),
+            onPressed: () => _navigateToHome(context),
             child: const Text('العودة للرئيسية'),
           ),
         ],
