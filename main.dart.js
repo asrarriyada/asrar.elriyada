@@ -49033,10 +49033,11 @@ A.a98.prototype={
 $1(a){return new A.mI(this.a,null)},
 $S:261}
 A.a9c.prototype={
-$0(){var s,r
-try{s=window.history
-s.toString
-s.pushState(new A.vr([],[]).wS(null),"","")}catch(r){}A.cz(this.a,!1).fZ(null)},
+$0(){var s,r,q
+try{s=B.b.gS(window.location.href.split("?"))
+r=window.history
+r.toString
+r.pushState(new A.vr([],[]).wS(null),"",s)}catch(q){}A.cz(this.a,!1).fZ(null)},
 $S:0}
 A.a9d.prototype={
 $2(a,b){var s,r,q,p=null,o=b.b
