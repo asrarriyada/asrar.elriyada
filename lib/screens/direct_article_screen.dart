@@ -7,10 +7,17 @@ import 'dart:html' as html;
 import '../home_screen.dart';
 import '../widgets/app_header.dart';
 
-class DirectArticleScreen extends StatelessWidget {
+class DirectArticleScreen extends StatefulWidget {
   final String articleTitle;
 
   const DirectArticleScreen({super.key, required this.articleTitle});
+
+  @override
+  State<DirectArticleScreen> createState() => _DirectArticleScreenState();
+}
+
+class _DirectArticleScreenState extends State<DirectArticleScreen> {
+  bool _urlUpdated = false;
 
   void _navigateToHome(BuildContext context) {
     if (kIsWeb) {
@@ -26,7 +33,7 @@ class DirectArticleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cleanTargetTitle = articleTitle.replaceAll('"', '').replaceAll("'", "").trim();
+    final cleanTargetTitle = widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim();
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -45,7 +52,6 @@ class DirectArticleScreen extends StatelessWidget {
               return _buildErrorView(context);
             }
 
-            // مطابقة ذكية تقبل جزء من العنوان أو اختلاف الياء والمسافات
             var matchedDoc = snapshot.data!.docs.firstWhere(
               (doc) {
                 final data = doc.data() as Map<String, dynamic>;
@@ -65,12 +71,15 @@ class DirectArticleScreen extends StatelessWidget {
             final newsData = matchedData;
             final actualTitle = newsData['title'] ?? '';
 
-            // تحديث رابط المتصفح ديناميكياً برابط الخبر الفعلي
-            if (kIsWeb && actualTitle.isNotEmpty) {
-              try {
-                final encodedTitle = Uri.encodeComponent(actualTitle);
-                html.window.history.pushState({}, '', '?title=$encodedTitle');
-              } catch (_) {}
+            // تحديث رابط المتصفح مرة واحدة فور جلب البيانات بنجاح
+            if (kIsWeb && actualTitle.isNotEmpty && !_urlUpdated) {
+              _urlUpdated = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                try {
+                  final encodedTitle = Uri.encodeComponent(actualTitle);
+                  html.window.history.pushState({}, '', '?title=$encodedTitle');
+                } catch (_) {}
+              });
             }
 
             return SingleChildScrollView(
