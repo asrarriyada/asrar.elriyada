@@ -22,7 +22,8 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
   void _navigateToHome(BuildContext context) {
     if (kIsWeb) {
       try {
-        html.window.history.pushState({}, '', './');
+        final basePath = html.window.location.href.split('?').first;
+        html.window.history.pushState(null, '', basePath);
       } catch (_) {}
     }
     Navigator.pushReplacement(
@@ -71,13 +72,13 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
             final newsData = matchedData;
             final actualTitle = newsData['title'] ?? '';
 
-            // تحديث رابط المتصفح مرة واحدة فور جلب البيانات بنجاح
+            // تحديث رابط المتصفح فور جلب البيانات بنجاح لفرض العنوان الجديد وإزالة الشوائب القديمة
             if (kIsWeb && actualTitle.isNotEmpty && !_urlUpdated) {
               _urlUpdated = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 try {
                   final encodedTitle = Uri.encodeComponent(actualTitle);
-                  html.window.history.pushState({}, '', '?title=$encodedTitle');
+                  html.window.history.pushState(null, '', '?title=$encodedTitle');
                 } catch (_) {}
               });
             }
