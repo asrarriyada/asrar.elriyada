@@ -3,15 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'widgets/app_header.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
+// ignore: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
-import 'screens/direct_article_screen.dart';
+import 'screens/direct_article_screen.dart'; // استيراد شاشة المقال المباشر الأساسية
 
 class CategoryNewsScreen extends StatelessWidget {
   final String categoryName;
 
   const CategoryNewsScreen({super.key, required this.categoryName});
 
+  // دالة موحدة لفتح تفاصيل الخبر وتحديث الرابط والانتقال لشاشة المقال الأساسية
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
 
@@ -27,15 +28,7 @@ class CategoryNewsScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (context) => DirectArticleScreen(articleTitle: title),
       ),
-    ).then((_) {
-      // عند العودة من المقال، نعيد ضبط رابط المتصفح للرئيسية أو القسم
-      if (kIsWeb) {
-        try {
-          final basePath = html.window.location.href.split('?').first;
-          html.window.history.pushState(null, '', basePath);
-        } catch (_) {}
-      }
-    });
+    );
   }
 
   @override
@@ -48,8 +41,10 @@ class CategoryNewsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // الهيدر الأساسي للموقع باللوجو والأقسام في أعلى صفحة القسم
               const AppHeader(),
               const SizedBox(height: 24),
+
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1050),
@@ -58,10 +53,18 @@ class CategoryNewsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // زر العودة للرئيسية جهة اليمين مع مسح باراميتر الـ URL
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              if (kIsWeb) {
+                                try {
+                                  html.window.history.pushState(null, '', '');
+                                } catch (_) {}
+                              }
+                              Navigator.pop(context);
+                            },
                             icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
                             label: const Text(
                               'الرئيسية',
@@ -70,6 +73,8 @@ class CategoryNewsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 5),
+
+                        // عنوان القسم بشكل أنيق
                         Row(
                           children: [
                             Container(
@@ -86,6 +91,8 @@ class CategoryNewsScreen extends StatelessWidget {
                         ),
                         const Divider(height: 24),
                         const SizedBox(height: 12),
+
+                        // جلب وعرض أخبار القسم في كروت شبكية صغيرة وجميلة
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance.collection('news').snapshots(),
                           builder: (context, snapshot) {
@@ -194,6 +201,7 @@ class CategoryNewsScreen extends StatelessWidget {
 
   Widget _buildNewsImage(dynamic img) {
     String url = (img ?? '').toString().trim();
+    
     if (url.startsWith('data:image')) {
       try {
         final base64Str = url.split(',').last;
@@ -205,6 +213,7 @@ class CategoryNewsScreen extends StatelessWidget {
         );
       } catch (_) {}
     }
+
     if (url.isNotEmpty && url.startsWith('http')) {
       return Image.network(
         url,
@@ -212,6 +221,7 @@ class CategoryNewsScreen extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => _errorImagePlaceholder(),
       );
     }
+    
     return _errorImagePlaceholder();
   }
 
