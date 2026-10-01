@@ -5,13 +5,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
+import 'screens/direct_article_screen.dart'; // استيراد شاشة المقال المباشر الأساسية
 
 class CategoryNewsScreen extends StatelessWidget {
   final String categoryName;
 
   const CategoryNewsScreen({super.key, required this.categoryName});
 
-  // دالة موحدة لفتح تفاصيل الخبر وتحديث رابط الـ URL لحظياً في الويب
+  // دالة موحدة لفتح تفاصيل الخبر وتحديث الرابط والانتقال لشاشة المقال الأساسية
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
 
@@ -25,137 +26,7 @@ class CategoryNewsScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Directionality(
-          textDirection: TextDirection.rtl,
-          child: Scaffold(
-            backgroundColor: const Color(0xFFF4F6F9),
-            body: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppHeader(),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 850),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton.icon(
-                                onPressed: () {
-                                  // عند العودة، نمسح الباراميتر من الـ URL ليعود لرابط القسم أو الرئيسية
-                                  if (kIsWeb) {
-                                    try {
-                                      html.window.history.pushState(null, '', '');
-                                    } catch (_) {}
-                                  }
-                                  Navigator.pop(context);
-                                },
-                                icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
-                                label: const Text(
-                                  'الرئيسية',
-                                  style: TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.all(28),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade300),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFB71C1C).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      newsData['category'] ?? 'أخبار عامة',
-                                      style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.bold, fontSize: 12),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    newsData['title'] ?? 'بدون عنوان',
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.4,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 18),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.person, size: 16, color: Color(0xFFB71C1C)),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'الكاتب: ${newsData['author'] ?? 'أسرار الرياضة'}',
-                                            style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.w600, fontSize: 13),
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        newsData['dateTime'] ?? '',
-                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  const Divider(height: 32),
-                                  if (newsData['imageUrl'] != null || newsData['image'] != null)
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: AspectRatio(
-                                        aspectRatio: 16 / 9,
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          child: _buildNewsImage(newsData['imageUrl'] ?? newsData['image']),
-                                        ),
-                                      ),
-                                    ),
-                                  const SizedBox(height: 28),
-                                  Text(
-                                    newsData['content'] ?? newsData['description'] ?? 'لا يوجد محتوى تفصيلي مضاف لهذا الخبر حتى الآن.',
-                                    style: const TextStyle(
-                                      fontSize: 16.5,
-                                      height: 1.9,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-                ],
-              ),
-            ),
-          ),
-        ),
+        builder: (context) => DirectArticleScreen(articleTitle: title),
       ),
     );
   }
@@ -170,8 +41,10 @@ class CategoryNewsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // الهيدر الأساسي للموقع باللوجو والأقسام في أعلى صفحة القسم
               const AppHeader(),
               const SizedBox(height: 24),
+
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1050),
@@ -180,10 +53,18 @@ class CategoryNewsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // زر العودة للرئيسية جهة اليمين مع مسح باراميتر الـ URL
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              if (kIsWeb) {
+                                try {
+                                  html.window.history.pushState(null, '', '');
+                                } catch (_) {}
+                              }
+                              Navigator.pop(context);
+                            },
                             icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
                             label: const Text(
                               'الرئيسية',
@@ -192,6 +73,8 @@ class CategoryNewsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 5),
+
+                        // عنوان القسم بشكل أنيق
                         Row(
                           children: [
                             Container(
@@ -208,6 +91,8 @@ class CategoryNewsScreen extends StatelessWidget {
                         ),
                         const Divider(height: 24),
                         const SizedBox(height: 12),
+
+                        // جلب وعرض أخبار القسم في كروت شبكية صغيرة وجميلة
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance.collection('news').snapshots(),
                           builder: (context, snapshot) {
