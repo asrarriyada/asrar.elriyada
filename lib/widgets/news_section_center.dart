@@ -4,6 +4,9 @@ import 'main_news_slider.dart';
 import 'app_header.dart';
 import 'breaking_news_ticker.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import '../screens/direct_article_screen.dart';
 
 class NewsSectionCenter extends StatefulWidget {
@@ -16,6 +19,16 @@ class NewsSectionCenter extends StatefulWidget {
 class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
+    
+    // في حالة الويب، نقوم بتحديث الرابط مباشرة والانتقال الفوري للرابط الفريد للخبر
+    if (kIsWeb) {
+      try {
+        final encodedTitle = Uri.encodeComponent(title);
+        html.window.location.href = '?title=$encodedTitle';
+        return;
+      } catch (_) {}
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
