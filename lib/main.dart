@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
+// ignore: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
 import 'home_screen.dart';
 import 'screens/direct_article_screen.dart';
@@ -39,10 +39,19 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
     super.initState();
     _parseUrlAndSetArticle();
 
-    // الاستماع لتغييرات الـ URL (مثل أزرار الرجوع والتقدم في المتصفح)
+    // الاستماع الفوري لتغييرات الـ URL في المتصفح
     if (kIsWeb) {
       html.window.onPopState.listen((event) {
         _parseUrlAndSetArticle();
+      });
+
+      // فحص مستمر خفيف جداً لالتقاط أي تغيير في الـ URL فور حدوثه من الأقسام
+      Future.doWhile(() async {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          _parseUrlAndSetArticle();
+        }
+        return true;
       });
     }
   }
@@ -57,9 +66,11 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
         titleParam = uri.queryParameters['code'];
       }
 
-      setState(() {
-        _currentArticleTitle = titleParam;
-      });
+      if (_currentArticleTitle != titleParam) {
+        setState(() {
+          _currentArticleTitle = titleParam;
+        });
+      }
     } catch (_) {}
   }
 
