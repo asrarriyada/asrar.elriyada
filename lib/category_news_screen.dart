@@ -11,20 +11,6 @@ class CategoryNewsScreen extends StatelessWidget {
 
   const CategoryNewsScreen({super.key, required this.categoryName});
 
-  // دالة لفتح تفاصيل الخبر وتحديث الرابط بدقة مطابقة لمسار الموقع الفعلي
-  void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
-    final title = newsData['title'] ?? '';
-
-    if (kIsWeb) {
-      try {
-        final encodedTitle = Uri.encodeComponent(title);
-        // أخذ المسار الأساسي الحالي للموقع لضمان عمله بسلاسة على GitHub Pages
-        final baseHref = Uri.base.origin + Uri.base.path;
-        html.window.location.href = '$baseHref?title=$encodedTitle';
-      } catch (_) {}
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -119,12 +105,21 @@ class CategoryNewsScreen extends StatelessWidget {
                               runSpacing: 16,
                               children: docs.map((doc) {
                                 final news = doc.data() as Map<String, dynamic>;
+                                final title = news['title'] ?? 'بدون عنوان';
+
                                 return SizedBox(
                                   width: 320,
                                   height: 180,
-                                  child: InkWell(
-                                    onTap: () => _openNewsDetails(context, news),
-                                    borderRadius: BorderRadius.circular(8),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (kIsWeb) {
+                                        try {
+                                          final encodedTitle = Uri.encodeComponent(title);
+                                          final baseHref = Uri.base.origin + Uri.base.path;
+                                          html.window.location.href = '$baseHref?title=$encodedTitle';
+                                        } catch (_) {}
+                                      }
+                                    },
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: Colors.white,
@@ -161,7 +156,7 @@ class CategoryNewsScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               child: Text(
-                                                news['title'] ?? 'بدون عنوان',
+                                                title,
                                                 style: const TextStyle(
                                                   fontSize: 13.5,
                                                   fontWeight: FontWeight.bold,
