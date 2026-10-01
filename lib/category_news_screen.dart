@@ -27,7 +27,15 @@ class CategoryNewsScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (context) => DirectArticleScreen(articleTitle: title),
       ),
-    );
+    ).then((_) {
+      // عند العودة من المقال، نعيد ضبط رابط المتصفح للرئيسية أو القسم
+      if (kIsWeb) {
+        try {
+          final basePath = html.window.location.href.split('?').first;
+          html.window.history.pushState(null, '', basePath);
+        } catch (_) {}
+      }
+    });
   }
 
   @override
@@ -53,15 +61,7 @@ class CategoryNewsScreen extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
-                            onPressed: () {
-                              if (kIsWeb) {
-                                try {
-                                  final basePath = html.window.location.href.split('?').first;
-                                  html.window.history.pushState(null, '', basePath);
-                                } catch (_) {}
-                              }
-                              Navigator.pop(context);
-                            },
+                            onPressed: () => Navigator.pop(context),
                             icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
                             label: const Text(
                               'الرئيسية',
