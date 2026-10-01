@@ -11,15 +11,16 @@ class CategoryNewsScreen extends StatelessWidget {
 
   const CategoryNewsScreen({super.key, required this.categoryName});
 
-  // دالة لفتح تفاصيل الخبر وتحديث الرابط بشكل مباشر ومطابق للرئيسية
+  // دالة لفتح تفاصيل الخبر وتحديث الرابط بدقة مطابقة لمسار الموقع الفعلي
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
 
     if (kIsWeb) {
       try {
         final encodedTitle = Uri.encodeComponent(title);
-        // توجيه المتصفح للرابط المباشر بنفس هيكل الرئيسية ليقوم main.dart بالتقاطه فوراً
-        html.window.location.href = '${html.window.location.origin}${html.window.location.pathname}?title=$encodedTitle';
+        // أخذ المسار الأساسي الحالي للموقع لضمان عمله بسلاسة على GitHub Pages
+        final baseHref = Uri.base.origin + Uri.base.path;
+        html.window.location.href = '$baseHref?title=$encodedTitle';
       } catch (_) {}
     }
   }
@@ -53,7 +54,8 @@ class CategoryNewsScreen extends StatelessWidget {
                             onPressed: () {
                               if (kIsWeb) {
                                 try {
-                                  html.window.location.href = '${html.window.location.origin}${html.window.location.pathname}';
+                                  final baseHref = Uri.base.origin + Uri.base.path;
+                                  html.window.location.href = baseHref;
                                 } catch (_) {}
                               } else {
                                 Navigator.pop(context);
