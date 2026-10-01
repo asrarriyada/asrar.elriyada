@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'home_screen.dart';
-import 'screens/direct_article_screen.dart'; // استيراد صفحة عرض المقال المباشر
+import 'screens/direct_article_screen.dart';
 import 'widgets/welcome_clock_overlay.dart'; 
 
 void main() async {
@@ -18,25 +21,47 @@ void main() async {
     ),
   );
 
-  // التقاط رابط الـ URL ومعرفة إذا كان هناك مقال مطلوب فتحه مباشرة
-  String? articleTitleParam;
-  try {
-    final uri = Uri.base;
-    // نفحص لو الرابط يحتوي على باراميتر 'title' أو 'code'
-    if (uri.queryParameters.containsKey('title')) {
-      articleTitleParam = uri.queryParameters['title'];
-    } else if (uri.queryParameters.containsKey('code')) {
-      articleTitleParam = uri.queryParameters['code'];
-    }
-  } catch (_) {}
-
-  runApp(AsrarElriyadaApp(initialArticleTitle: articleTitleParam));
+  runApp(const AsrarElriyadaApp());
 }
 
-class AsrarElriyadaApp extends StatelessWidget {
-  final String? initialArticleTitle;
+class AsrarElriyadaApp extends StatefulWidget {
+  const AsrarElriyadaApp({super.key});
 
-  const AsrarElriyadaApp({super.key, this.initialArticleTitle});
+  @override
+  State<AsrarElriyadaApp> createState() => _AsrarElriyadaAppState();
+}
+
+class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
+  String? _currentArticleTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    _parseUrlAndSetArticle();
+
+    // الاستماع لتغييرات الـ URL (مثل أزرار الرجوع والتقدم في المتصفح)
+    if (kIsWeb) {
+      html.window.onPopState.listen((event) {
+        _parseUrlAndSetArticle();
+      });
+    }
+  }
+
+  void _parseUrlAndSetArticle() {
+    try {
+      final uri = Uri.base;
+      String? titleParam;
+      if (uri.queryParameters.containsKey('title')) {
+        titleParam = uri.queryParameters['title'];
+      } else if (uri.queryParameters.containsKey('code')) {
+        titleParam = uri.queryParameters['code'];
+      }
+
+      setState(() {
+        _currentArticleTitle = titleParam;
+      });
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +72,9 @@ class AsrarElriyadaApp extends StatelessWidget {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
       ),
-      // المنطق الذكي: لو فيه رابط مقال في الـ URL افتح شاشة المقال مباشرة، وإلا افتح الرئيسية بشكل طبيعي تماماً
-      home: initialArticleTitle != null && initialArticleTitle!.isNotEmpty
-          ? DirectArticleScreen(articleTitle: initialArticleTitle!)
+      // بناء الشاشة بناءً على العنوان الحالي في الـ URL ديناميكياً
+      home: _currentArticleTitle != null && _currentArticleTitle!.isNotEmpty
+          ? DirectArticleScreen(articleTitle: _currentArticleTitle!)
           : const WelcomeClockOverlay(
               child: HomeScreen(),
             ),

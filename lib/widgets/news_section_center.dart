@@ -20,12 +20,11 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
     
-    // في حالة الويب، نقوم بتحديث الرابط مباشرة والانتقال الفوري للرابط الفريد للخبر
+    // تحديث رابط المتصفح لحظياً بدون إعادة تحميل الصفحة، ثم فتح شاشة المقال
     if (kIsWeb) {
       try {
         final encodedTitle = Uri.encodeComponent(title);
-        html.window.location.href = '?title=$encodedTitle';
-        return;
+        html.window.history.pushState(null, '', '?title=$encodedTitle');
       } catch (_) {}
     }
 
