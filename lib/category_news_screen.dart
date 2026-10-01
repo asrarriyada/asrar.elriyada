@@ -5,30 +5,23 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 // ignore: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
-import 'screens/direct_article_screen.dart'; // استيراد شاشة المقال المباشر الأساسية
 
 class CategoryNewsScreen extends StatelessWidget {
   final String categoryName;
 
   const CategoryNewsScreen({super.key, required this.categoryName});
 
-  // دالة موحدة لفتح تفاصيل الخبر وتحديث الرابط والانتقال لشاشة المقال الأساسية
+  // دالة لفتح تفاصيل الخبر وتحديث الرابط بشكل مباشر ومطابق للرئيسية
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
 
     if (kIsWeb) {
       try {
         final encodedTitle = Uri.encodeComponent(title);
-        html.window.history.pushState(null, '', '?title=$encodedTitle');
+        // توجيه المتصفح للرابط المباشر بنفس هيكل الرئيسية ليقوم main.dart بالتقاطه فوراً
+        html.window.location.href = '${html.window.location.origin}${html.window.location.pathname}?title=$encodedTitle';
       } catch (_) {}
     }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DirectArticleScreen(articleTitle: title),
-      ),
-    );
   }
 
   @override
@@ -53,17 +46,18 @@ class CategoryNewsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // زر العودة للرئيسية جهة اليمين مع مسح باراميتر الـ URL
+                        // زر العودة للرئيسية جهة اليمين مع إزالة الباراميتر من الرابط
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
                             onPressed: () {
                               if (kIsWeb) {
                                 try {
-                                  html.window.history.pushState(null, '', '');
+                                  html.window.location.href = '${html.window.location.origin}${html.window.location.pathname}';
                                 } catch (_) {}
+                              } else {
+                                Navigator.pop(context);
                               }
-                              Navigator.pop(context);
                             },
                             icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFFB71C1C)),
                             label: const Text(
