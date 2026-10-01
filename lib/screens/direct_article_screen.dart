@@ -17,7 +17,19 @@ class DirectArticleScreen extends StatefulWidget {
 }
 
 class _DirectArticleScreenState extends State<DirectArticleScreen> {
-  bool _urlUpdated = false;
+  @override
+  void initState() {
+    super.initState();
+    // تحديث رابط المتصفح لحظياً فور فتح شاشة المقال بغض النظر عن مصدر الضغط (رئيسية أو أقسام)
+    if (kIsWeb && widget.articleTitle.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final encodedTitle = Uri.encodeComponent(widget.articleTitle);
+          html.window.history.pushState(null, '', '?title=$encodedTitle');
+        } catch (_) {}
+      });
+    }
+  }
 
   void _navigateToHome(BuildContext context) {
     if (kIsWeb) {
@@ -71,17 +83,6 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
 
             final newsData = matchedData;
             final actualTitle = newsData['title'] ?? '';
-
-            // تحديث رابط المتصفح فور جلب البيانات بنجاح لفرض العنوان الجديد وإزالة الشوائب القديمة
-            if (kIsWeb && actualTitle.isNotEmpty && !_urlUpdated) {
-              _urlUpdated = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                try {
-                  final encodedTitle = Uri.encodeComponent(actualTitle);
-                  html.window.history.pushState(null, '', '?title=$encodedTitle');
-                } catch (_) {}
-              });
-            }
 
             return SingleChildScrollView(
               child: Column(
