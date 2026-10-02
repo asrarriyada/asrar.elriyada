@@ -5,8 +5,6 @@ import 'app_header.dart';
 import 'breaking_news_ticker.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../screens/direct_article_screen.dart';
 
 class NewsSectionCenter extends StatefulWidget {
@@ -20,11 +18,7 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
     
-    if (kIsWeb) {
-      final encodedTitle = Uri.encodeComponent(title);
-      html.window.history.pushState(null, '', '?title=$encodedTitle');
-    }
-
+    // الانتقال مباشرة لشاشة المقال المباشر، وهي ستقوم بتحديث رابط المتصفح تلقائياً في الـ initState
     Navigator.push(
       context,
       MaterialPageRoute(
