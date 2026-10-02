@@ -65,7 +65,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
       text: widget.existingNews?['author'] ?? '',
     );
 
-    _newsId = widget.existingNews?['newsId'] ?? DateTime.now().millisecondsSinceEpoch.toString().substring(5);
+    _newsId = widget.existingNews?['newsId'] ?? DateTime.now().millisecondsSinceEpoch.toString().substring(6);
 
     if (widget.existingNews != null) {
       _titleController.text = widget.existingNews!['title'] ?? '';
@@ -211,6 +211,8 @@ class _AddNewsPageState extends State<AddNewsPage> {
       return;
     }
 
+    final String previewShareUrl = 'https://asrarriyada.github.io/asrar.elriyada/?id=$_newsId';
+
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -220,7 +222,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
             children: [
               Icon(Icons.visibility, color: Color(0xFFB71C1C)),
               SizedBox(width: 8),
-              Text('معاينة المقال قبل النشر والمشاركة'),
+              Text('معاينة المقال بكود المشاركة المختصر'),
             ],
           ),
           content: SizedBox(
@@ -229,6 +231,8 @@ class _AddNewsPageState extends State<AddNewsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text('كود الخبر (ID): $_newsId', style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
                   Text('القسم: $_selectedCategory', style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(_titleController.text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -250,11 +254,11 @@ class _AddNewsPageState extends State<AddNewsPage> {
                   const SizedBox(height: 12),
                   Text(_contentController.text, maxLines: 5, overflow: TextOverflow.ellipsis),
                   const Divider(height: 30),
-                  const Text('أزرار المشاركة السريعة برابط آمن وقصير:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const Text('أزرار المشاركة السريعة بالكود المختصر:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 10),
                   SocialShareButtons(
                     newsTitle: _titleController.text,
-                    newsUrl: 'https://asrarriyada.github.io/asrar.elriyada/?id=$_newsId',
+                    newsUrl: previewShareUrl,
                   ),
                 ],
               ),
@@ -558,7 +562,6 @@ class _AddNewsPageState extends State<AddNewsPage> {
                 ],
                 const SizedBox(height: 30),
                 
-                // زر معاينة المقال الذكي (تصحيح النظافة البرمجية)
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -570,7 +573,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
                     ),
                     onPressed: _openPreviewScreen,
                     icon: const Icon(Icons.visibility),
-                    label: const Text('معاينة المقال وربط السوشيال ميديا', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    label: const Text('معاينة المقال بكود المشاركة المختصر', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 12),
