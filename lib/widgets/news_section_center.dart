@@ -20,20 +20,20 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
     
-    // تحديث رابط المتصفح لحظياً بدون إعادة تحميل الصفحة، ثم فتح شاشة المقال
     if (kIsWeb) {
       try {
         final encodedTitle = Uri.encodeComponent(title);
-        html.window.history.pushState(null, '', '?title=$encodedTitle');
+        final baseHref = Uri.base.origin + Uri.base.path;
+        html.window.location.href = '$baseHref?title=$encodedTitle';
       } catch (_) {}
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DirectArticleScreen(articleTitle: title),
+        ),
+      );
     }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DirectArticleScreen(articleTitle: title),
-      ),
-    );
   }
 
   @override
