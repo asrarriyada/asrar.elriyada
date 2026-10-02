@@ -21,19 +21,16 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     final title = newsData['title'] ?? '';
     
     if (kIsWeb) {
-      try {
-        final encodedTitle = Uri.encodeComponent(title);
-        final baseHref = Uri.base.origin + Uri.base.path;
-        html.window.location.href = '$baseHref?title=$encodedTitle';
-      } catch (_) {}
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DirectArticleScreen(articleTitle: title),
-        ),
-      );
+      final encodedTitle = Uri.encodeComponent(title);
+      html.window.history.pushState(null, '', '?title=$encodedTitle');
     }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DirectArticleScreen(articleTitle: title),
+      ),
+    );
   }
 
   @override
