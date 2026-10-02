@@ -14,10 +14,10 @@ class SocialShareButtons extends StatelessWidget {
   });
 
   Future<void> _launchShareUrl(BuildContext context, String urlString, String platformName, String fullShareText) async {
-    // نسخ الرابط والنص مباشرة للحافظة لضمان عدم ضياعه
+    // نسخ الرابط والنص مباشرة للحافظة لضمان عدم ضياع تفاصيل الخبر
     await Clipboard.setData(ClipboardData(text: fullShareText));
     
-    // إظهار تنبيه صغير للمستخدم أن الرابط تم نسخه
+    // إظهار تنبيه صغير للمستخدم أن النص والرابط تم نسخهما
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('تم نسخ رابط $platformName ونصه للحافظة بنجاح! جاهز للصق.'),
@@ -34,19 +34,26 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استخدام الرابط الأساسي النظيف للموقع لضمان عدم حدوث خطأ 404 أو Site not found على فيسبوك
+    // الرابط الأساسي النظيف المخصص للفيسبوك لضمان نجاح المعاينة بدون أخطاء
     const String cleanBaseUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
-    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? cleanBaseUrl : '');
+    
+    // رابط الخبر التفصيلي الموجه للمنصات الأخرى وللنص المنسخ
+    final String detailedUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? Uri.base.toString() : '');
 
     final encodedTitle = Uri.encodeComponent(newsTitle);
-    final encodedUrl = Uri.encodeComponent(targetUrl);
+    
+    // فيسبوك سيأخذ الرابط النظيف لضمان ظهور المعاينة والصورة الرسمية للموقع بدون Site not found
+    final encodedFacebookUrl = Uri.encodeComponent(cleanBaseUrl);
+    final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedFacebookUrl';
 
-    final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
-    final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
-    final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
-    final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
+    // باقي المنصات تأخذ الرابط التفصيلي الكامل مع العنوان
+    final encodedDetailedUrl = Uri.encodeComponent(detailedUrl);
+    final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedDetailedUrl';
+    final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedDetailedUrl';
+    final telegramUrl = 'https://t.me/share/url?url=$encodedDetailedUrl&text=$encodedTitle';
 
-    final fullShareText = '$newsTitle\n$targetUrl';
+    // النص المنسخ للحافظة يحتوي على عنوان الخبر ورابطه التفصيلي ليظهر كاملاً عند اللصق
+    final fullShareText = '$newsTitle\n$detailedUrl';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
