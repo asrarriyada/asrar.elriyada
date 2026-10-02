@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SocialShareButtons extends StatelessWidget {
   final String newsTitle;
@@ -20,9 +21,12 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // جلب الرابط الحالي مباشرة من Uri.base في فلاتر الويب لضمان تضمين اسم الخبر
+    final String currentUrl = kIsWeb ? Uri.base.toString() : newsUrl;
+
     // تجهيز النص والرابط للنشر
     final encodedTitle = Uri.encodeComponent(newsTitle);
-    final encodedUrl = Uri.encodeComponent(newsUrl);
+    final encodedUrl = Uri.encodeComponent(currentUrl);
 
     // روابط المشاركة المباشرة لمنصات الفيسبوك و X وتليجرام وواتساب
     final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
@@ -61,7 +65,7 @@ class SocialShareButtons extends StatelessWidget {
               ),
               _buildShareButton(
                 title: 'تويتر (X)',
-                icon: Icons.close, // أو أي أيكونة مناسبة
+                icon: Icons.close,
                 color: Colors.black,
                 onTap: () => _launchShareUrl(twitterUrl),
               ),

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:html' as html;
 import '../home_screen.dart';
 import '../widgets/app_header.dart';
+import '../widgets/social_share_buttons.dart';
 
 class DirectArticleScreen extends StatefulWidget {
   final String articleTitle;
@@ -20,7 +21,7 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
   @override
   void initState() {
     super.initState();
-    // تحديث رابط المتصفح لحظياً فور فتح شاشة المقال بغض النظر عن مصدر الضغط (رئيسية أو أقسام)
+    // تحديث رابط المتصفح لحظياً فور فتح شاشة المقال
     if (kIsWeb && widget.articleTitle.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
@@ -196,6 +197,12 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
                                       height: 1.9,
                                       color: Colors.black87,
                                     ),
+                                  ),
+                                  const SizedBox(height: 35),
+                                  // أزرار المشاركة السريعة متصلة بالرابط الفعلي للمقال
+                                  SocialShareButtons(
+                                    newsTitle: actualTitle,
+                                    newsUrl: kIsWeb ? html.window.location.href : '',
                                   ),
                                 ],
                               ),
