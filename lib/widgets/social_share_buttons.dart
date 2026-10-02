@@ -63,6 +63,7 @@ class SocialShareButtons extends StatelessWidget {
     final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
     final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
 
+    // النص المنسوخ بالكامل مع العنوان الحقيقي الممرر بمتغير سليم 100%
     final fullShareText = '$newsTitle\n$targetUrl';
 
     return Container(
