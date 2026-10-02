@@ -32,8 +32,14 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استخدام الرابط القصير والآمن الممرر مباشرة (المعتمد على الـ id) بدون أي تعديل
-    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : 'https://asrarriyada.github.io/asrar.elriyada/';
+    // توجيه الرابط عبر الوسيط الذكي لـ Vercel ليقوم فيسبوك بسحب المعاينة (الصورة والعنوان) ديناميكياً
+    String baseTargetUrl = newsUrl.isNotEmpty ? newsUrl : 'https://asrarriyada.github.io/asrar.elriyada/';
+    
+    // استبدال نطاق جيت هب بنطاق Vercel السحري للشارع الخارجي
+    final String targetUrl = baseTargetUrl.replaceAll(
+      'https://asrarriyada.github.io/asrar.elriyada/',
+      'https://asrar-share.vercel.app/'
+    );
 
     final encodedTitle = Uri.encodeComponent(newsTitle);
     final encodedUrl = Uri.encodeComponent(targetUrl);
