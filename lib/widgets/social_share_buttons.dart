@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/services.dart'; // مهم للنسخ
+import 'package:flutter/services.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class SocialShareButtons extends StatelessWidget {
   final String newsTitle;
@@ -32,10 +34,22 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // توجيه الرابط عبر الوسيط الذكي لـ Vercel ليقوم فيسبوك بسحب المعاينة (الصورة والعنوان) ديناميكياً
-    String baseTargetUrl = newsUrl.isNotEmpty ? newsUrl : 'https://asrarriyada.github.io/asrar.elriyada/';
+    // جلب الرابط الحالي من المتصفح لو كنا على الويب (والذي يحتوي على الـ id الحقيقي للخبر)، وإلا استخدام الممرر
+    String baseTargetUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
+    if (kIsWeb) {
+      try {
+        final currentHref = html.window.location.href;
+        if (currentHref.isNotEmpty && currentHref.contains('?id=')) {
+          baseTargetUrl = currentHref;
+        }
+      } catch (_) {}
+    }
     
-    // استبدال نطاق جيت هب بنطاق Vercel السحري للشارع الخارجي
+    if (baseTargetUrl == 'https://asrarriyada.github.io/asrar.elriyada/' && newsUrl.isNotEmpty) {
+      baseTargetUrl = newsUrl;
+    }
+    
+    // استبدال نطاق جيت هب بنطاق Vercel السحري لكي يقرأ فيسبوك الميتا تاتجز ديناميكياً
     final String targetUrl = baseTargetUrl.replaceAll(
       'https://asrarriyada.github.io/asrar.elriyada/',
       'https://asrar-share.vercel.app/'
