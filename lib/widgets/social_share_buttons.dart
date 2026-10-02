@@ -14,7 +14,6 @@ class SocialShareButtons extends StatelessWidget {
   });
 
   Future<void> _launchShareUrl(BuildContext context, String urlString, String platformName, String fullShareText) async {
-    // نسخ الرابط والنص مباشرة للحافظة لضمان عدم ضياع تفاصيل الخبر
     await Clipboard.setData(ClipboardData(text: fullShareText));
     
     ScaffoldMessenger.of(context).showSnackBar(
@@ -33,12 +32,8 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استخدام الـ Hash (#) لضمان أن فيسبوك يقرأ الرابط والمستعرض بمرونة بدون أخطاء
-    const String domainBase = 'https://asrarriyada.github.io/asrar.elriyada/#/';
-    
-    // ربط عنوان الخبر بالـ Hash لكي يظهر في المعاينة وفي الرابط بشكل سليم
-    final String routeWithTitle = 'news?title=${Uri.encodeComponent(newsTitle)}';
-    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? '$domainBase$routeWithTitle' : '');
+    // استخدام الرابط القصير والآمن الممرر مباشرة (المعتمد على الـ id) بدون أي تعديل
+    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : 'https://asrarriyada.github.io/asrar.elriyada/';
 
     final encodedTitle = Uri.encodeComponent(newsTitle);
     final encodedUrl = Uri.encodeComponent(targetUrl);
