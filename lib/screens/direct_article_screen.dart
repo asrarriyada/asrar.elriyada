@@ -21,7 +21,17 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
   @override
   void initState() {
     super.initState();
-    // تم إزالة تعديل الرابط بـ title الطويل منعاً لحدوث Out of Memory في المتصفح
+    // أخذ أول 3 كلمات فقط من العنوان لضمان رابط قصير، نظيف، وبدون أي Out of Memory
+    if (kIsWeb && widget.articleTitle.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final words = widget.articleTitle.trim().split(RegExp(r'\s+'));
+          final shortTitle = words.take(3).join(' '); // أول 3 كلمات فقط
+          final encodedTitle = Uri.encodeComponent(shortTitle);
+          html.window.history.pushState(null, '', '?title=$encodedTitle');
+        } catch (_) {}
+      });
+    }
   }
 
   void _navigateToHome(BuildContext context) {
@@ -76,9 +86,6 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
 
             final newsData = matchedData;
             final actualTitle = newsData['title'] ?? '';
-
-            // رابط نظيف وآمن تماماً للمشاركة يخلو من أي عناوين طويلة تسبب تهنيج المتصفح
-            final String cleanShareUrl = kIsWeb ? html.window.location.href.split('?').first : '';
 
             return SingleChildScrollView(
               child: Column(
@@ -194,10 +201,10 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 35),
-                                  // أزرار المشاركة السريعة برابط آمن ونظيف تماماً
+                                  // أزرار المشاركة برابط قصير ونظيف يحتوي على أول الكلمات لفتح الخبر مباشرة
                                   SocialShareButtons(
                                     newsTitle: actualTitle,
-                                    newsUrl: cleanShareUrl,
+                                    newsUrl: kIsWeb ? html.window.location.href : '',
                                   ),
                                 ],
                               ),
