@@ -18,17 +18,21 @@ class DirectArticleScreen extends StatefulWidget {
 }
 
 class _DirectArticleScreenState extends State<DirectArticleScreen> {
+  String? _extractedId;
+
   @override
   void initState() {
     super.initState();
-    // أخذ أول 3 كلمات فقط من العنوان لضمان رابط قصير، نظيف، وبدون أي Out of Memory
-    if (kIsWeb && widget.articleTitle.isNotEmpty) {
+    if (kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
-          final words = widget.articleTitle.trim().split(RegExp(r'\s+'));
-          final shortTitle = words.take(3).join(' '); // أول 3 كلمات فقط
-          final encodedTitle = Uri.encodeComponent(shortTitle);
-          html.window.history.pushState(null, '', '?title=$encodedTitle');
+          final uri = Uri.parse(html.window.location.href);
+          final idParam = uri.queryParameters['id'];
+          if (idParam != null && idParam.isNotEmpty) {
+            setState(() {
+              _extractedId = idParam;
+            });
+          }
         } catch (_) {}
       });
     }
@@ -49,14 +53,15 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cleanTargetTitle = widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim();
+    // نحدد الاستعلام بناءً على وجود الـ id المستخرج أو الاعتماد على العنوان القديم كبديل
+    var query = FirebaseFirestore.instance.collection('news');
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F6F9),
         body: FutureBuilder<QuerySnapshot>(
-          future: FirebaseFirestore.instance.collection('news').get(),
+          future: query.get(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -68,24 +73,27 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
               return _buildErrorView(context);
             }
 
+            // البحث الذكي: إما بالمطابقة الدقيقة للـ newsId أو بالعنوان
             var matchedDoc = snapshot.data!.docs.firstWhere(
               (doc) {
                 final data = doc.data() as Map<String, dynamic>;
+                if (_extractedId != null && _extractedId!.isNotEmpty) {
+                  return data['newsId'] == _extractedId;
+                }
                 final dbTitle = (data['title'] ?? '').toString().replaceAll('"', '').replaceAll("'", "").trim();
-                return dbTitle.contains(cleanTargetTitle);
+                return dbTitle.contains(widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim());
               },
               orElse: () => snapshot.data!.docs.first,
             );
 
-            final matchedData = matchedDoc.data() as Map<String, dynamic>;
-            final dbTitleCheck = (matchedData['title'] ?? '').toString().replaceAll('"', '').replaceAll("'", "").trim();
-            
-            if (!dbTitleCheck.contains(cleanTargetTitle)) {
+            final newsData = matchedDoc.data() as Map<String, dynamic>;
+            final actualTitle = newsData['title'] ?? '';
+
+            if (actualTitle.isEmpty) {
               return _buildErrorView(context);
             }
 
-            final newsData = matchedData;
-            final actualTitle = newsData['title'] ?? '';
+            final String currentShareUrl = kIsWeb ? html.window.location.href : 'https://asrarriyada.github.io/asrar.elriyada/';
 
             return SingleChildScrollView(
               child: Column(
@@ -147,7 +155,7 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
-                                    actualTitle.isNotEmpty ? actualTitle : 'بدون عنوان',
+                                    actualTitle,
                                     style: const TextStyle(
                                       fontSize: 26,
                                       fontWeight: FontWeight.bold,
@@ -201,10 +209,9 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 35),
-                                  // أزرار المشاركة برابط قصير ونظيف يحتوي على أول الكلمات لفتح الخبر مباشرة
                                   SocialShareButtons(
                                     newsTitle: actualTitle,
-                                    newsUrl: kIsWeb ? html.window.location.href : '',
+                                    newsUrl: currentShareUrl,
                                   ),
                                 ],
                               ),
