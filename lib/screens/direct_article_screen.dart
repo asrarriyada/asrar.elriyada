@@ -21,15 +21,7 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
   @override
   void initState() {
     super.initState();
-    // تحديث رابط المتصفح لحظياً فور فتح شاشة المقال
-    if (kIsWeb && widget.articleTitle.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        try {
-          final encodedTitle = Uri.encodeComponent(widget.articleTitle);
-          html.window.history.pushState(null, '', '?title=$encodedTitle');
-        } catch (_) {}
-      });
-    }
+    // تم إزالة تعديل الرابط بـ title الطويل منعاً لحدوث Out of Memory في المتصفح
   }
 
   void _navigateToHome(BuildContext context) {
@@ -84,6 +76,9 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
 
             final newsData = matchedData;
             final actualTitle = newsData['title'] ?? '';
+
+            // رابط نظيف وآمن تماماً للمشاركة يخلو من أي عناوين طويلة تسبب تهنيج المتصفح
+            final String cleanShareUrl = kIsWeb ? html.window.location.href.split('?').first : '';
 
             return SingleChildScrollView(
               child: Column(
@@ -199,10 +194,10 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 35),
-                                  // أزرار المشاركة السريعة متصلة بالرابط الفعلي للمقال
+                                  // أزرار المشاركة السريعة برابط آمن ونظيف تماماً
                                   SocialShareButtons(
                                     newsTitle: actualTitle,
-                                    newsUrl: kIsWeb ? html.window.location.href : '',
+                                    newsUrl: cleanShareUrl,
                                   ),
                                 ],
                               ),
