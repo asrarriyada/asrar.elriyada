@@ -20,7 +20,7 @@ class SocialShareButtons extends StatelessWidget {
     // إظهار تنبيه صغير للمستخدم أن الرابط تم نسخه
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('تم نسخ رابط $platformName ونصه الحافظة بنجاح! جاهز للصق.'),
+        content: Text('تم نسخ رابط $platformName ونصه للحافظة بنجاح! جاهز للصق.'),
         backgroundColor: const Color(0xFFB71C1C),
         duration: const Duration(seconds: 2),
       ),
@@ -34,7 +34,9 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? Uri.base.toString() : '');
+    // استخدام الرابط الأساسي النظيف للموقع لضمان عدم حدوث خطأ 404 أو Site not found على فيسبوك
+    const String cleanBaseUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
+    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? cleanBaseUrl : '');
 
     final encodedTitle = Uri.encodeComponent(newsTitle);
     final encodedUrl = Uri.encodeComponent(targetUrl);
