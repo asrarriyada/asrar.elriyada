@@ -17,7 +17,6 @@ class SocialShareButtons extends StatelessWidget {
     // نسخ الرابط والنص مباشرة للحافظة لضمان عدم ضياع تفاصيل الخبر
     await Clipboard.setData(ClipboardData(text: fullShareText));
     
-    // إظهار تنبيه صغير للمستخدم أن النص والرابط تم نسخهما
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('تم نسخ رابط $platformName ونصه للحافظة بنجاح! جاهز للصق.'),
@@ -34,26 +33,22 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // الرابط الأساسي النظيف المخصص للفيسبوك لضمان نجاح المعاينة بدون أخطاء
-    const String cleanBaseUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
+    // استخدام الـ Hash (#) لضمان أن فيسبوك يقرأ الرابط والمستعرض بمرونة بدون أخطاء
+    const String domainBase = 'https://asrarriyada.github.io/asrar.elriyada/#/';
     
-    // رابط الخبر التفصيلي الموجه للمنصات الأخرى وللنص المنسخ
-    final String detailedUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? Uri.base.toString() : '');
+    // ربط عنوان الخبر بالـ Hash لكي يظهر في المعاينة وفي الرابط بشكل سليم
+    final String routeWithTitle = 'news?title=${Uri.encodeComponent(newsTitle)}';
+    final String targetUrl = newsUrl.isNotEmpty ? newsUrl : (kIsWeb ? '$domainBase$routeWithTitle' : '');
 
     final encodedTitle = Uri.encodeComponent(newsTitle);
-    
-    // فيسبوك سيأخذ الرابط النظيف لضمان ظهور المعاينة والصورة الرسمية للموقع بدون Site not found
-    final encodedFacebookUrl = Uri.encodeComponent(cleanBaseUrl);
-    final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedFacebookUrl';
+    final encodedUrl = Uri.encodeComponent(targetUrl);
 
-    // باقي المنصات تأخذ الرابط التفصيلي الكامل مع العنوان
-    final encodedDetailedUrl = Uri.encodeComponent(detailedUrl);
-    final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedDetailedUrl';
-    final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedDetailedUrl';
-    final telegramUrl = 'https://t.me/share/url?url=$encodedDetailedUrl&text=$encodedTitle';
+    final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
+    final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
+    final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
+    final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
 
-    // النص المنسخ للحافظة يحتوي على عنوان الخبر ورابطه التفصيلي ليظهر كاملاً عند اللصق
-    final fullShareText = '$newsTitle\n$detailedUrl';
+    final fullShareText = '$newsTitle\n$targetUrl';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
