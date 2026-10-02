@@ -19,15 +19,9 @@ class _AddNewsPageState extends State<AddNewsPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   
-  // حقول الباك لينك كعنوان خبر سابق ورابطه
   final TextEditingController _feedbackLinkController = TextEditingController();
   final TextEditingController _feedbackTitleController = TextEditingController(); 
-  
-  // حقل رابط الفيديو بين السطور (بزر تشغيل)
   final TextEditingController _videoLinkController = TextEditingController();
-  
-  // حقل لإضافة صورة ثانية بين السطور
-  final TextEditingController _inlineImageCaptionController = TextEditingController();
 
   late TextEditingController _authorNameController;
 
@@ -54,12 +48,13 @@ class _AddNewsPageState extends State<AddNewsPage> {
   Uint8List? _webImageBytes;
   String _imagePath = '';
   
-  // صورة بين السطور
   Uint8List? _inlineImageBytes;
   String _inlineImagePath = '';
 
   Uint8List? _authorImageBytes;
   String _authorImagePath = '';
+
+  late String _newsId;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -69,6 +64,8 @@ class _AddNewsPageState extends State<AddNewsPage> {
     _authorNameController = TextEditingController(
       text: widget.existingNews?['author'] ?? '',
     );
+
+    _newsId = widget.existingNews?['newsId'] ?? DateTime.now().millisecondsSinceEpoch.toString().substring(5);
 
     if (widget.existingNews != null) {
       _titleController.text = widget.existingNews!['title'] ?? '';
@@ -170,6 +167,31 @@ class _AddNewsPageState extends State<AddNewsPage> {
     }
   }
 
+  Map<String, dynamic> _buildNewsMap() {
+    DateTime now = DateTime.now();
+    String formattedDateTime = '${now.year}-${now.month}-${now.day} – ${now.hour}:${now.minute}';
+
+    return {
+      'newsId': _newsId,
+      'title': _titleController.text.trim(),
+      'content': _contentController.text.trim(),
+      'category': _selectedCategory,
+      'imageUrl': _imagePath,
+      'image': _imagePath,
+      'inlineImageUrl': _inlineImagePath,
+      'authorImage': _authorImagePath,
+      'videoUrl': _videoLinkController.text.trim(),
+      'videoLink': _videoLinkController.text.trim(),
+      'feedbackLink': _feedbackLinkController.text.trim(),
+      'feedbackTitle': _feedbackTitleController.text.trim(),
+      'dateTime': formattedDateTime,
+      'author': _authorNameController.text.trim(),
+      'fontFamily': _selectedFontFamily,
+      'fontSize': _fontSize,
+      'fontColor': _fontColor.value,
+    };
+  }
+
   void _saveNews() {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -178,35 +200,91 @@ class _AddNewsPageState extends State<AddNewsPage> {
       return;
     }
 
-    DateTime now = DateTime.now();
-    String formattedDateTime = '${now.year}-${now.month}-${now.day} – ${now.hour}:${now.minute}';
+    Navigator.pop(context, _buildNewsMap());
+  }
 
-    Map<String, dynamic> newsItem = {
-      'title': _titleController.text.trim(),
-      'content': _contentController.text.trim(),
-      'category': _selectedCategory,
-      'imageUrl': _imagePath,
-      'image': _imagePath,
-      'inlineImageUrl': _inlineImagePath, // حفظ صورة بين السطور
-      'authorImage': _authorImagePath,
-      'videoUrl': _videoLinkController.text.trim(),
-      'videoLink': _videoLinkController.text.trim(),
-      'feedbackLink': _feedbackLinkController.text.trim(),
-      'feedbackTitle': _feedbackTitleController.text.trim(), // عنوان الخبر السابق (باك لينك نصي)
-      'dateTime': formattedDateTime,
-      'author': _authorNameController.text.trim(),
-      'fontFamily': _selectedFontFamily,
-      'fontSize': _fontSize,
-      'fontColor': _fontColor.value,
-    };
+  void _openPreviewScreen() {
+    if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى إدخال عنوان وتفاصيل المقال لمعاينته'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
-    Navigator.pop(context, newsItem);
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.visibility, color: Color(0xFFB71C1C)),
+              SizedBox(width: 8),
+              Text('معاينة المقال قبل النشر والمشاركة'),
+            ],
+          ),
+          content: SizedBox(
+            width: 600,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('القسم: $_selectedCategory', style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(_titleController.text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  if (_imagePath.isNotEmpty)
+                    Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: _webImageBytes != null 
+                              ? MemoryImage(_webImageBytes!) 
+                              : NetworkImage(_imagePath) as ImageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  Text(_contentController.text, maxLines: 5, overflow: TextOverflow.ellipsis),
+                  const Divider(height: 30),
+                  const Text('أزرار المشاركة السريعة برابط آمن وقصير:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 10),
+                  SocialShareButtons(
+                    newsTitle: _titleController.text,
+                    newsUrl: 'https://asrarriyada.github.io/asrar.elriyada/?id=$_newsId',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('رجوع للتعديل', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), foregroundColor: Colors.white),
+              onPressed: () {
+                Navigator.pop(context);
+                _saveNews();
+              },
+              child: const Text('اعتماد النشر والحفظ'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
     bool isEditing = widget.existingNews != null;
+
+    final String shareUrl = 'https://asrarriyada.github.io/asrar.elriyada/?id=$_newsId';
 
     return Scaffold(
       appBar: AppBar(
@@ -340,7 +418,6 @@ class _AddNewsPageState extends State<AddNewsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // 1. قسم إضافة صورة بين السطور
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -380,7 +457,6 @@ class _AddNewsPageState extends State<AddNewsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // 2. قسم إضافة فيديو بين السطور (بزر تشغيل)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -396,7 +472,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
                       TextField(
                         controller: _videoLinkController,
                         decoration: InputDecoration(
-                          hintText: 'ضع رابط الفيديو هنا (مثال يوتيوب أو فيديو مباشر)...',
+                          hintText: 'ضع رابط الفيديو هنا...',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
                           fillColor: Colors.white,
@@ -407,7 +483,6 @@ class _AddNewsPageState extends State<AddNewsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // 3. قسم البك لينك (عنوان خبر سابق نصي وجذاب)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -423,7 +498,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
                       TextField(
                         controller: _feedbackTitleController,
                         decoration: InputDecoration(
-                          hintText: 'عنوان الخبر السابق (مثال: اقرأ أيضاً: لامي يامาล يتغنى بـ... في الكرة الذهبية)',
+                          hintText: 'عنوان الخبر السابق...',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
                           fillColor: Colors.white,
@@ -433,7 +508,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
                       TextField(
                         controller: _feedbackLinkController,
                         decoration: InputDecoration(
-                          hintText: 'رابط الخبر (مثال: https://asrarelriyada.github.io/asrar_elryiada/)',
+                          hintText: 'رابط الخبر...',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
                           fillColor: Colors.white,
@@ -482,6 +557,24 @@ class _AddNewsPageState extends State<AddNewsPage> {
                   ),
                 ],
                 const SizedBox(height: 30),
+                
+                // زر معاينة المقال الذكي (تصحيح النظافة البرمجية)
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: _openPreviewScreen,
+                    icon: const Icon(Icons.visibility),
+                    label: const Text('معاينة المقال وربط السوشيال ميديا', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -492,14 +585,14 @@ class _AddNewsPageState extends State<AddNewsPage> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: _saveNews,
-                    child: Text(isEditing ? 'حفظ التعديلات' : 'نشر وحفظ المقال', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(isEditing ? 'حفظ التعديلات' : 'نشر وحفظ المقال مباشرة', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 
                 const SizedBox(height: 20),
                 SocialShareButtons(
                   newsTitle: _titleController.text.isEmpty ? 'أسرار الرياضة' : _titleController.text,
-                  newsUrl: 'https://asrarelriyada.github.io/asrar_elryiada/',
+                  newsUrl: shareUrl,
                 ),
               ],
             ),
