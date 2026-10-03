@@ -50710,7 +50710,7 @@ r.toString
 s=r
 if(J.c9(s)!==0&&J.mv(s,"?id="))e=s}catch(q){}if(J.d(e,h)&&i.d.length!==0)e=i.d
 r=e
-p=A.l6(r,h,"https://asrar-share.vercel.app/")
+p=A.l6(r,h,"https://asrar-share.vercel.app/api")
 o=A.of(2,p,B.ao,!1)
 r=i.c
 n=r.length!==0
