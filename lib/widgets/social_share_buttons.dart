@@ -34,7 +34,6 @@ class SocialShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // جلب الرابط الحالي من المتصفح لو كنا على الويب (والذي يحتوي على الـ id الحقيقي للخبر)، وإلا استخدام الممرر
     String baseTargetUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
     if (kIsWeb) {
       try {
@@ -49,22 +48,22 @@ class SocialShareButtons extends StatelessWidget {
       baseTargetUrl = newsUrl;
     }
     
-    // استبدال نطاق جيت هب بنطاق Vercel السحري لكي يقرأ فيسبوك الميتا تاتجز ديناميكياً
+    // استبدال نطاق جيت هب بنطاق Vercel السحري
     final String targetUrl = baseTargetUrl.replaceAll(
       'https://asrarriyada.github.io/asrar.elriyada/',
       'https://asrar-share.vercel.app/'
     );
 
-    final encodedTitle = Uri.encodeComponent(newsTitle);
     final encodedUrl = Uri.encodeComponent(targetUrl);
+    final encodedTitle = Uri.encodeComponent(newsTitle.isNotEmpty ? newsTitle : 'أسرار الرياضة');
 
+    // روابط المشاركة المباشرة والصحيحة لكل منصة
     final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
     final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
     final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
 
-    // دمج النص بالطريقة المباشرة لضمان ظهور العنوان الحقيقي تماماً
-    final fullShareText = newsTitle + '\n' + targetUrl;
+    final fullShareText = '${newsTitle.isNotEmpty ? newsTitle : "أسرار الرياضة"}\n$targetUrl';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
