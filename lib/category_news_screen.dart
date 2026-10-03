@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'widgets/app_header.dart';
+import 'screens/direct_article_screen.dart'; // تأكدي من مسار الاستيراد الصحيح حسب مكان الملف
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 // ignore: avoid_web_libraries_in_flutter, deprecated_member_use
@@ -106,6 +107,7 @@ class CategoryNewsScreen extends StatelessWidget {
                               children: docs.map((doc) {
                                 final news = doc.data() as Map<String, dynamic>;
                                 final title = news['title'] ?? 'بدون عنوان';
+                                final docId = doc.id; // استخدام الـ ID الفريد للمستند
 
                                 return SizedBox(
                                   width: 320,
@@ -114,11 +116,18 @@ class CategoryNewsScreen extends StatelessWidget {
                                     onTap: () {
                                       if (kIsWeb) {
                                         try {
-                                          final encodedTitle = Uri.encodeComponent(title);
                                           final baseHref = Uri.base.origin + Uri.base.path;
-                                          html.window.location.href = '$baseHref?title=$encodedTitle';
+                                          // تحديث الـ URL برابط مستقل يحمل الـ id الخاص بالخبر
+                                          html.window.history.pushState(null, '', '$baseHref?id=$docId');
                                         } catch (_) {}
                                       }
+                                      // الانتقال لصفحة عرض الخبر مباشرة
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => DirectArticleScreen(articleTitle: title),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(

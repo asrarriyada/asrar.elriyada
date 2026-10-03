@@ -32,7 +32,7 @@ class AsrarElriyadaApp extends StatefulWidget {
 }
 
 class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
-  String? _currentArticleTitle;
+  String? _currentArticleParam;
 
   @override
   void initState() {
@@ -59,16 +59,20 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
   void _parseUrlAndSetArticle() {
     try {
       final uri = Uri.base;
-      String? titleParam;
-      if (uri.queryParameters.containsKey('title')) {
-        titleParam = uri.queryParameters['title'];
+      String? paramValue;
+      
+      // التقاط الـ id أو title أو code من الرابط بكل احترافية
+      if (uri.queryParameters.containsKey('id')) {
+        paramValue = uri.queryParameters['id'];
+      } else if (uri.queryParameters.containsKey('title')) {
+        paramValue = uri.queryParameters['title'];
       } else if (uri.queryParameters.containsKey('code')) {
-        titleParam = uri.queryParameters['code'];
+        paramValue = uri.queryParameters['code'];
       }
 
-      if (_currentArticleTitle != titleParam) {
+      if (_currentArticleParam != paramValue) {
         setState(() {
-          _currentArticleTitle = titleParam;
+          _currentArticleParam = paramValue;
         });
       }
     } catch (_) {}
@@ -83,9 +87,9 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
       ),
-      // بناء الشاشة بناءً على العنوان الحالي في الـ URL ديناميكياً
-      home: _currentArticleTitle != null && _currentArticleTitle!.isNotEmpty
-          ? DirectArticleScreen(articleTitle: _currentArticleTitle!)
+      // إذا وجدنا id أو param في الرابط، نفتح DirectArticleScreen فوراً
+      home: _currentArticleParam != null && _currentArticleParam!.isNotEmpty
+          ? DirectArticleScreen(articleTitle: _currentArticleParam!)
           : const WelcomeClockOverlay(
               child: HomeScreen(),
             ),
