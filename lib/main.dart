@@ -39,13 +39,11 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
     super.initState();
     _parseUrlAndSetArticle();
 
-    // الاستماع الفوري لتغييرات الـ URL في المتصفح
     if (kIsWeb) {
       html.window.onPopState.listen((event) {
         _parseUrlAndSetArticle();
       });
 
-      // فحص مستمر خفيف جداً لالتقاط أي تغيير في الـ URL فور حدوثه من الأقسام
       Future.doWhile(() async {
         await Future.delayed(const Duration(milliseconds: 300));
         if (mounted) {
@@ -61,7 +59,6 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
       final uri = Uri.base;
       String? paramValue;
       
-      // التقاط الـ id أو title أو code من الرابط بكل احترافية
       if (uri.queryParameters.containsKey('id')) {
         paramValue = uri.queryParameters['id'];
       } else if (uri.queryParameters.containsKey('title')) {
@@ -78,6 +75,17 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
     } catch (_) {}
   }
 
+  void _clearArticleUrl() {
+    if (kIsWeb) {
+      try {
+        html.window.history.pushState(null, 'أسرار الرياضة', '/asrar.elriyada/');
+      } catch (_) {}
+    }
+    setState(() {
+      _currentArticleParam = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -87,9 +95,16 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
       ),
-      // إذا وجدنا id أو param في الرابط، نفتح DirectArticleScreen فوراً
       home: _currentArticleParam != null && _currentArticleParam!.isNotEmpty
-          ? DirectArticleScreen(articleTitle: _currentArticleParam!)
+          ? PopScope(
+              canPop: true,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) {
+                  _clearArticleUrl();
+                }
+              },
+              child: DirectArticleScreen(articleTitle: _currentArticleParam!),
+            )
           : const WelcomeClockOverlay(
               child: HomeScreen(),
             ),
