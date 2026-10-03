@@ -50704,21 +50704,22 @@ case 3:s=6
 return A.B(A.a78(q,B.rH),$async$m5)
 case 6:case 4:return A.F(null,r)}})
 return A.G($async$m5,r)},
-F(a){var s,r,q,p,o,n,m,l,k,j=this,i="https://asrarriyada.github.io/asrar.elriyada/",h=null,g=i
+F(a){var s,r,q,p,o,n,m,l,k,j,i=this,h="https://asrarriyada.github.io/asrar.elriyada/",g=null,f="\u0623\u0633\u0631\u0627\u0631 \u0627\u0644\u0631\u064a\u0627\u0636\u0629",e=h
 try{r=window.location.href
 r.toString
 s=r
-if(J.c9(s)!==0&&J.mv(s,"?id="))g=s}catch(q){}if(J.d(g,i)&&j.d.length!==0)g=j.d
-r=g
-p=A.l6(r,i,"https://asrar-share.vercel.app/")
-r=j.c
-o=A.of(2,r,B.ao,!1)
-n=A.of(2,p,B.ao,!1)
-m=r+"\n"+p
+if(J.c9(s)!==0&&J.mv(s,"?id="))e=s}catch(q){}if(J.d(e,h)&&i.d.length!==0)e=i.d
+r=e
+p=A.l6(r,h,"https://asrar-share.vercel.app/")
+o=A.of(2,p,B.ao,!1)
+r=i.c
+n=r.length!==0
+m=A.of(2,n?r:f,B.ao,!1)
+l=(n?r:f)+"\n"+p
 r=A.bp(12)
-l=A.dP(B.aI,1)
-k=t.p
-return A.aN(h,A.b_(A.b([B.a5z,B.c8,A.au2(A.b([j.A4(B.Iv,B.Ms,new A.ari(j,a,"https://www.facebook.com/sharer/sharer.php?u="+n,m),"\u0641\u064a\u0633\u0628\u0648\u0643"),j.A4(B.k,B.mv,new A.arj(j,a,"https://twitter.com/intent/tweet?text="+o+"&url="+n,m),"\u062a\u0648\u064a\u062a\u0631 (X)"),j.A4(B.IZ,B.Mn,new A.ark(j,a,"https://api.whatsapp.com/send?text="+o+"%20"+n,m),"\u0648\u0627\u062a\u0633\u0627\u0628"),j.A4(B.IJ,B.MF,new A.arl(j,a,"https://t.me/share/url?url="+n+"&text="+o,m),"\u062a\u0644\u064a\u062c\u0631\u0627\u0645")],k),10,10)],k),B.J,B.l,B.n,0,B.q),B.m,h,h,new A.bk(B.e0,h,l,r,h,h,B.C),h,h,h,B.lH,h,h,h)},
+k=A.dP(B.aI,1)
+j=t.p
+return A.aN(g,A.b_(A.b([B.a5z,B.c8,A.au2(A.b([i.A4(B.Iv,B.Ms,new A.ari(i,a,"https://www.facebook.com/sharer/sharer.php?u="+o,l),"\u0641\u064a\u0633\u0628\u0648\u0643"),i.A4(B.k,B.mv,new A.arj(i,a,"https://twitter.com/intent/tweet?text="+m+"&url="+o,l),"\u062a\u0648\u064a\u062a\u0631 (X)"),i.A4(B.IZ,B.Mn,new A.ark(i,a,"https://api.whatsapp.com/send?text="+m+"%20"+o,l),"\u0648\u0627\u062a\u0633\u0627\u0628"),i.A4(B.IJ,B.MF,new A.arl(i,a,"https://t.me/share/url?url="+o+"&text="+m,l),"\u062a\u0644\u064a\u062c\u0631\u0627\u0645")],j),10,10)],j),B.J,B.l,B.n,0,B.q),B.m,g,g,new A.bk(B.e0,g,k,r,g,g,B.C),g,g,g,B.lH,g,g,g)},
 A4(a,b,c,d){var s=null,r=A.hU(s,s,a,s,s,s,s,s,s,B.h,s,s,B.lG,s,new A.cM(A.bp(8),B.t),s,s,s,s,s)
 return A.wJ(A.p6(b,s,s,18),A.aj(d,s,s,s,B.i5,s,s,s),c,r)}}
 A.ari.prototype={
