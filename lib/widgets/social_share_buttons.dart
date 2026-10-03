@@ -48,11 +48,14 @@ class SocialShareButtons extends StatelessWidget {
       baseTargetUrl = newsUrl;
     }
     
-    // استبدال نطاق جيت هب بنطاق Vercel المظبوط مع الـ API والصورة والعنوان
-    final String targetUrl = baseTargetUrl.replaceAll(
-      'https://asrarriyada.github.io/asrar.elriyada/',
-      'https://asrar-share.vercel.app/api'
-    );
+    // ضبط وتوجيه الرابط ليعمل بسلاسة عبر Vercel API مع الـ ID الحقيقي
+    String targetUrl = baseTargetUrl;
+    if (targetUrl.contains('?id=')) {
+      final newsId = targetUrl.split('?id=').last;
+      targetUrl = 'https://asrar-share.vercel.app/api?id=$newsId';
+    } else {
+      targetUrl = 'https://asrar-share.vercel.app/api';
+    }
 
     final encodedUrl = Uri.encodeComponent(targetUrl);
     final encodedTitle = Uri.encodeComponent(newsTitle.isNotEmpty ? newsTitle : 'أسرار الرياضة');
