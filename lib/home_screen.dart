@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'widgets/app_header.dart';
 import 'widgets/matches_tabs_banner.dart';
 import 'widgets/matches_ticker_widget.dart';
@@ -19,6 +22,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _currentSelectedDay = 'today'; // اليوم الافتراضي
+
+  @override
+  void initState() {
+    super.initState();
+    // تنظيف رابط المتصفح تلقائياً وإزالة الـ ID عند التواجد في الصفحة الرئيسية
+    if (kIsWeb) {
+      try {
+        final currentHref = html.window.location.href;
+        if (currentHref.contains('?id=')) {
+          html.window.history.replaceState({}, '', '/asrar.elriyada/');
+        }
+      } catch (_) {}
+    }
+  }
 
   // دالة استخراج كود الفيديو من أي رابط يوتيوب
   String? _extractYouTubeId(String url) {

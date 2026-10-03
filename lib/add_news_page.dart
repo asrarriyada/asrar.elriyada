@@ -22,6 +22,9 @@ class _AddNewsPageState extends State<AddNewsPage> {
   final TextEditingController _feedbackLinkController = TextEditingController();
   final TextEditingController _feedbackTitleController = TextEditingController(); 
   final TextEditingController _videoLinkController = TextEditingController();
+  
+  // كنترولر مخصص لرابط الصورة المباشر (مثل روابط بلوجر)
+  final TextEditingController _imageUrlController = TextEditingController();
 
   late TextEditingController _authorNameController;
 
@@ -83,6 +86,12 @@ class _AddNewsPageState extends State<AddNewsPage> {
       }
 
       _imagePath = widget.existingNews!['imageUrl'] ?? widget.existingNews!['image'] ?? '';
+      
+      // إذا كان الرابط مباشر ويب (https)، نضعه مباشرة في خانة النص لتسهيل التعديل
+      if (_imagePath.isNotEmpty && _imagePath.startsWith('http')) {
+        _imageUrlController.text = _imagePath;
+      }
+
       _authorImagePath = widget.existingNews!['authorImage'] ?? '';
       _selectedFontFamily = widget.existingNews!['fontFamily'] ?? 'Cairo';
       _fontSize = (widget.existingNews!['fontSize'] ?? 14.0).toDouble();
@@ -126,6 +135,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
         setState(() {
           _webImageBytes = bytes;
           _imagePath = base64Image;
+          _imageUrlController.clear(); // مسح خانة الرابط النصي لو اختار صورة محلية
         });
       }
     } catch (e) {
@@ -171,13 +181,18 @@ class _AddNewsPageState extends State<AddNewsPage> {
     DateTime now = DateTime.now();
     String formattedDateTime = '${now.year}-${now.month}-${now.day} – ${now.hour}:${now.minute}';
 
+    // تحديد مسار الصورة النهائية: إما الرابط المكتوب في الخانة أو المسار القديم
+    String finalImagePath = _imageUrlController.text.trim().isNotEmpty 
+        ? _imageUrlController.text.trim() 
+        : _imagePath;
+
     return {
       'newsId': _newsId,
       'title': _titleController.text.trim(),
       'content': _contentController.text.trim(),
       'category': _selectedCategory,
-      'imageUrl': _imagePath,
-      'image': _imagePath,
+      'imageUrl': finalImagePath,
+      'image': finalImagePath,
       'inlineImageUrl': _inlineImagePath,
       'authorImage': _authorImagePath,
       'videoUrl': _videoLinkController.text.trim(),
@@ -212,6 +227,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
     }
 
     final String previewShareUrl = 'https://asrarriyada.github.io/asrar.elriyada/?id=$_newsId';
+    final String activeImage = _imageUrlController.text.trim().isNotEmpty ? _imageUrlController.text.trim() : _imagePath;
 
     showDialog(
       context: context,
@@ -237,16 +253,16 @@ class _AddNewsPageState extends State<AddNewsPage> {
                   const SizedBox(height: 8),
                   Text(_titleController.text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  if (_imagePath.isNotEmpty)
+                  if (activeImage.isNotEmpty)
                     Container(
                       height: 160,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         image: DecorationImage(
-                          image: _webImageBytes != null 
+                          image: _webImageBytes != null && _imageUrlController.text.isEmpty
                               ? MemoryImage(_webImageBytes!) 
-                              : NetworkImage(_imagePath) as ImageProvider,
+                              : NetworkImage(activeImage) as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -523,8 +539,22 @@ class _AddNewsPageState extends State<AddNewsPage> {
                 ),
 
                 const SizedBox(height: 16),
-                const Text('صورة المقال/الخبر الرئيسية (من الكمبيوتر)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('صورة المقال/الخبر الرئيسية (رابط مباشر أو من الكمبيوتر)', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
+                
+                // خانة إدخال رابط الصورة المباشر (مثل بلوجر)
+                TextField(
+                  controller: _imageUrlController,
+                  decoration: InputDecoration(
+                    hintText: 'أو الصق رابط الصورة المباشر هنا (https://...)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    prefixIcon: const Icon(Icons.link, color: Color(0xFFB71C1C)),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 Row(
                   children: [
                     ElevatedButton.icon(
@@ -536,19 +566,19 @@ class _AddNewsPageState extends State<AddNewsPage> {
                       ),
                       onPressed: _pickImage,
                       icon: const Icon(Icons.upload_file, color: Color(0xFFB71C1C)),
-                      label: const Text('اختيار صورة الخبر'),
+                      label: const Text('أو رفع صورة من الكمبيوتر'),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        _imagePath.isNotEmpty ? 'تم اختيار صورة الخبر بنجاح' : 'لم يتم اختيار صورة للخبر بعد',
+                        _imagePath.isNotEmpty && _imageUrlController.text.isEmpty ? 'تم اختيار صورة محلية' : 'متاح إدخال رابط مباشر أو رفع ملف',
                         style: const TextStyle(color: Colors.grey, fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                if (_webImageBytes != null) ...[
+                if (_webImageBytes != null && _imageUrlController.text.isEmpty) ...[
                   const SizedBox(height: 12),
                   Container(
                     height: 100,
