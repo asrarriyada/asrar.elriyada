@@ -18,7 +18,7 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
     
-    // الانتقال مباشرة لشاشة المقال المباشر، وهي ستقوم بتحديث رابط المتصفح تلقائياً في الـ initState
+    // الانتقال المباشر لشاشة المقال، والتي ستتولى تحديث رابط المتصفح تلقائياً
     Navigator.push(
       context,
       MaterialPageRoute(

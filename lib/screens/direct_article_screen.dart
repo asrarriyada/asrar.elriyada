@@ -19,6 +19,7 @@ class DirectArticleScreen extends StatefulWidget {
 
 class _DirectArticleScreenState extends State<DirectArticleScreen> {
   String? _extractedId;
+  String? _extractedTitleParam;
 
   @override
   void initState() {
@@ -28,11 +29,16 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
         try {
           final uri = Uri.parse(html.window.location.href);
           final idParam = uri.queryParameters['id'];
-          if (idParam != null && idParam.isNotEmpty) {
-            setState(() {
+          final titleParam = uri.queryParameters['title'];
+          
+          setState(() {
+            if (idParam != null && idParam.isNotEmpty) {
               _extractedId = idParam;
-            });
-          }
+            }
+            if (titleParam != null && titleParam.isNotEmpty) {
+              _extractedTitleParam = Uri.decodeComponent(titleParam);
+            }
+          });
         } catch (_) {}
       });
     }
@@ -53,7 +59,6 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // نحدد الاستعلام بناءً على وجود الـ id المستخرج أو الاعتماد على العنوان القديم كبديل
     var query = FirebaseFirestore.instance.collection('news');
 
     return Directionality(
@@ -73,24 +78,43 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
               return _buildErrorView(context);
             }
 
-            // البحث الذكي: إما بالمطابقة الدقيقة للـ newsId أو بالعنوان
-            var matchedDoc = snapshot.data!.docs.firstWhere(
-              (doc) {
+            var docs = snapshot.data!.docs;
+            QueryDocumentSnapshot? matchedDoc;
+
+            // البحث الذكي بأمان تام
+            try {
+              matchedDoc = docs.firstWhere((doc) {
                 final data = doc.data() as Map<String, dynamic>;
                 if (_extractedId != null && _extractedId!.isNotEmpty) {
-                  return data['newsId'] == _extractedId;
+                  return data['newsId'] == _extractedId || doc.id == _extractedId;
                 }
                 final dbTitle = (data['title'] ?? '').toString().replaceAll('"', '').replaceAll("'", "").trim();
+                if (_extractedTitleParam != null && _extractedTitleParam!.isNotEmpty) {
+                  return dbTitle.contains(_extractedTitleParam!.replaceAll('"', '').replaceAll("'", "").trim());
+                }
                 return dbTitle.contains(widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim());
-              },
-              orElse: () => snapshot.data!.docs.first,
-            );
+              });
+            } catch (_) {
+              // لو مشتاقش مطابقة دقيقة، يرجع أول وثيقة كافتراضي
+              matchedDoc = docs.first;
+            }
 
             final newsData = matchedDoc.data() as Map<String, dynamic>;
             final actualTitle = newsData['title'] ?? '';
 
             if (actualTitle.isEmpty) {
               return _buildErrorView(context);
+            }
+
+            if (kIsWeb) {
+              try {
+                final docId = matchedDoc.id;
+                final currentHref = html.window.location.href;
+                if (!currentHref.contains('id=$docId') && !currentHref.contains('title=')) {
+                  final basePath = currentHref.split('?').first;
+                  html.window.history.pushState(null, '', '$basePath?id=$docId');
+                }
+              } catch (_) {}
             }
 
             final String currentShareUrl = kIsWeb ? html.window.location.href : 'https://asrarriyada.github.io/asrar.elriyada/';
