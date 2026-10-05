@@ -26,12 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // تنظيف رابط المتصفح تلقائياً وإزالة الـ ID عند التواجد في الصفحة الرئيسية
+    // تنظيف رابط المتصفح بأمان وإزالة الـ ID فقط عند التواجد في الرئيسية
     if (kIsWeb) {
       try {
         final currentHref = html.window.location.href;
         if (currentHref.contains('?id=')) {
-          html.window.history.replaceState({}, '', '/asrar.elriyada/');
+          final cleanUrl = currentHref.split('?')[0];
+          html.window.history.replaceState({}, '', cleanUrl);
         }
       } catch (_) {}
     }
