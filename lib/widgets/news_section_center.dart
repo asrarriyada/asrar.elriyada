@@ -32,7 +32,7 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     bool isMobile = MediaQuery.of(context).size.width < 900;
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('news').orderBy('createdAt', descending: true).snapshots(),
+      stream: FirebaseFirestore.instance.collection('news').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox(height: 364);
