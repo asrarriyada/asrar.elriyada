@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import 'widgets/app_header.dart';
 import 'widgets/matches_tabs_banner.dart';
 import 'widgets/matches_ticker_widget.dart';
@@ -26,16 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // تنظيف رابط المتصفح بأمان وإزالة الـ ID فقط عند التواجد في الرئيسية
-    if (kIsWeb) {
-      try {
-        final currentHref = html.window.location.href;
-        if (currentHref.contains('?id=')) {
-          final cleanUrl = currentHref.split('?')[0];
-          html.window.history.replaceState({}, '', cleanUrl);
-        }
-      } catch (_) {}
-    }
+    // تم إزالة تنظيف الرابط مؤقتاً لضمان تحميل وعرض محتوى فايربيز والأخبار بكامل استقرارها
   }
 
   // دالة استخراج كود الفيديو من أي رابط يوتيوب
