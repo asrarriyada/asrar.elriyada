@@ -43,14 +43,6 @@ class _AsrarElriyadaAppState extends State<AsrarElriyadaApp> {
       html.window.onPopState.listen((event) {
         _parseUrlAndSetArticle();
       });
-
-      Future.doWhile(() async {
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (mounted) {
-          _parseUrlAndSetArticle();
-        }
-        return true;
-      });
     }
   }
 
