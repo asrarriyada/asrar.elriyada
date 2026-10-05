@@ -81,21 +81,29 @@ class _DirectArticleScreenState extends State<DirectArticleScreen> {
             var docs = snapshot.data!.docs;
             QueryDocumentSnapshot? matchedDoc;
 
-            // البحث الذكي بأمان تام
+            // البحث الذكي الآمن تماماً لضمان جلب المقال دون أي أخطاء
             try {
-              matchedDoc = docs.firstWhere((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                if (_extractedId != null && _extractedId!.isNotEmpty) {
-                  return data['newsId'] == _extractedId || doc.id == _extractedId;
-                }
-                final dbTitle = (data['title'] ?? '').toString().replaceAll('"', '').replaceAll("'", "").trim();
-                if (_extractedTitleParam != null && _extractedTitleParam!.isNotEmpty) {
-                  return dbTitle.contains(_extractedTitleParam!.replaceAll('"', '').replaceAll("'", "").trim());
-                }
-                return dbTitle.contains(widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim());
-              });
+              if (_extractedId != null && _extractedId!.isNotEmpty) {
+                matchedDoc = docs.firstWhere(
+                  (doc) => doc.id == _extractedId || (doc.data() as Map<String, dynamic>)['newsId'] == _extractedId,
+                  orElse: () => docs.first,
+                );
+              } else if (_extractedTitleParam != null && _extractedTitleParam!.isNotEmpty) {
+                final targetTitle = _extractedTitleParam!.replaceAll('"', '').replaceAll("'", "").trim();
+                matchedDoc = docs.firstWhere(
+                  (doc) => (doc.data() as Map<String, dynamic>)['title'].toString().contains(targetTitle),
+                  orElse: () => docs.first,
+                );
+              } else if (widget.articleTitle.isNotEmpty) {
+                final targetTitle = widget.articleTitle.replaceAll('"', '').replaceAll("'", "").trim();
+                matchedDoc = docs.firstWhere(
+                  (doc) => (doc.data() as Map<String, dynamic>)['title'].toString().contains(targetTitle),
+                  orElse: () => docs.first,
+                );
+              } else {
+                matchedDoc = docs.first;
+              }
             } catch (_) {
-              // لو مشتاقش مطابقة دقيقة، يرجع أول وثيقة كافتراضي
               matchedDoc = docs.first;
             }
 
