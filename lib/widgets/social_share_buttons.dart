@@ -65,6 +65,8 @@ class SocialShareButtons extends StatelessWidget {
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
     final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
     final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
+    // رابط صفحة انستجرام الخاصة بالموقع
+    final instagramUrl = 'https://www.instagram.com/asrarelryida2026/';
 
     final fullShareText = '${newsTitle.isNotEmpty ? newsTitle : "أسرار الرياضة"}\n$targetUrl';
 
@@ -102,6 +104,12 @@ class SocialShareButtons extends StatelessWidget {
                 icon: Icons.close,
                 color: Colors.black,
                 onTap: () => _launchShareUrl(context, twitterUrl, 'تويتر', fullShareText),
+              ),
+              _buildShareButton(
+                title: 'انستجرام',
+                icon: Icons.camera_alt,
+                color: const Color(0xFFE1306C), // لون انستجرام المميز
+                onTap: () => _launchShareUrl(context, instagramUrl, 'انستجرام', fullShareText),
               ),
               _buildShareButton(
                 title: 'واتساب',
