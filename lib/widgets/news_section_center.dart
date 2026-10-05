@@ -18,7 +18,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
     final title = newsData['title'] ?? '';
     
-    // الانتقال المباشر لشاشة المقال، والتي ستتولى تحديث رابط المتصفح تلقائياً
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -34,14 +33,31 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('news').snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox(height: 364);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(40.0),
+              child: CircularProgressIndicator(color: Color(0xFFB71C1C)),
+            ),
+          );
         }
 
-        if (snapshot.data!.docs.isEmpty) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('خطأ في الاتصال: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16.0),
-            child: Text('لا توجد أخبار منشورة حالياً.', style: TextStyle(color: Colors.grey)),
+            child: Center(
+              child: Text(
+                'لا توجد أخبار منشورة حالياً في قاعدة البيانات.',
+                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ),
           );
         }
 
