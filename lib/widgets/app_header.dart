@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../category_news_screen.dart';
 import '../category_videos_screen.dart';
 import '../about_screen.dart';
-import '../home_screen.dart';
+// تم الاستغناء عن استيراد home_screen لأنه لم يعد مطلوباً في الـ pushReplacement الثقيل
 
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
@@ -153,24 +150,9 @@ class AppHeader extends StatelessWidget {
   Widget _buildHomeItem(BuildContext context, String title) {
     return InkWell(
       onTap: () {
-        if (kIsWeb) {
-          try {
-            // استخراج النطاق الأساسي فقط وإعادة توجيه المتصفح لتنظيف الـ ID والـ Query Parameters تماماً
-            final currentUri = Uri.parse(html.window.location.href);
-            final cleanOrigin = '${currentUri.scheme}://${currentUri.authority}${currentUri.path}';
-            html.window.location.href = cleanOrigin;
-            return;
-          } catch (_) {}
-        }
-        Navigator.pushAndRemoveUntil(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-            transitionDuration: Duration.zero,
-          ),
-          (route) => false,
-        );
+        // تم استبدال الثقيل (pushReplacement لـ HomeScreen) بـ popUntil
+        // ده بيخلي العودة للرئيسية فورية وسريعة جداً بدون إعادة بناء التطبيق من الصفر
+        Navigator.of(context).popUntil((route) => route.isFirst);
       },
       borderRadius: BorderRadius.circular(3),
       child: Padding(
@@ -214,7 +196,7 @@ class AppHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoNavItem(BuildContext context, String title, {bool isHighlight = false}) {
+  Widget _buildVideoNavItem(BuildContext context, String title) {
     return InkWell(
       onTap: () {
         Navigator.push(

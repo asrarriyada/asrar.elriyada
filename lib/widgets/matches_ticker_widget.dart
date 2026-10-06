@@ -120,6 +120,7 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
               child: SizedBox(
                 height: isMobile ? 85 : 75,
                 child: StreamBuilder<QuerySnapshot>(
+                  key: ValueKey(targetDateQuery), // يمنع تكرار الاتصال بفايربيز بلا داعي ويقضي على الـ Loop
                   stream: FirebaseFirestore.instance
                       .collection('matches')
                       .where('date', isEqualTo: targetDateQuery)
@@ -164,7 +165,7 @@ class _MatchesTickerWidgetState extends State<MatchesTickerWidget> {
                     return ListView.builder(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
-                      reverse: false, // اتجاه طبيعي بدون عكس
+                      reverse: false,
                       itemCount: docs.length,
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;

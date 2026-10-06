@@ -26,6 +26,65 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     );
   }
 
+  // تم نقل الدالة إلى الخارج هنا لمنع إعادة إنشائها بلا داعي مع كل رندر
+  Widget _buildSubNewsItem(BuildContext context, Map<String, dynamic> newsData, bool isMobile) {
+    return InkWell(
+      onTap: () => _openNewsDetails(context, newsData),
+      child: Container(
+        height: isMobile ? 85 : null,
+        margin: const EdgeInsets.only(bottom: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(4),
+                bottomRight: Radius.circular(4),
+              ),
+              child: SizedBox(
+                width: isMobile ? 110 : 100,
+                height: double.infinity,
+                child: _buildNewsImage(newsData['imageUrl'] ?? newsData['image']),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      newsData['category'] ?? 'أخبار',
+                      style: const TextStyle(fontSize: 10, color: Color(0xFFB71C1C), fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      newsData['title'] ?? 'بدون عنوان',
+                      style: TextStyle(
+                        fontSize: isMobile ? 12 : 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 900;
@@ -66,64 +125,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         final subNews = newsDocs.skip(1).take(4).toList();
         final titlesList = newsDocs.map((doc) => (doc.data() as Map<String, dynamic>)['title'] ?? '').toList().cast<String>();
 
-        Widget buildSubNewsItem(Map<String, dynamic> newsData) {
-          return InkWell(
-            onTap: () => _openNewsDetails(context, newsData),
-            child: Container(
-              height: isMobile ? 85 : null,
-              margin: const EdgeInsets.only(bottom: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
-                    ),
-                    child: SizedBox(
-                      width: isMobile ? 110 : 100,
-                      height: double.infinity,
-                      child: _buildNewsImage(newsData['imageUrl'] ?? newsData['image']),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            newsData['category'] ?? 'أخبار',
-                            style: const TextStyle(fontSize: 10, color: Color(0xFFB71C1C), fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            newsData['title'] ?? 'بدون عنوان',
-                            style: TextStyle(
-                              fontSize: isMobile ? 12 : 11.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                              height: 1.2,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
         return Directionality(
           textDirection: TextDirection.rtl,
           child: Column(
@@ -143,7 +144,7 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        ...subNews.map((doc) => buildSubNewsItem(doc.data() as Map<String, dynamic>)),
+                        ...subNews.map((doc) => _buildSubNewsItem(context, doc.data() as Map<String, dynamic>, isMobile)),
                       ],
                     )
                   : Container(
@@ -166,7 +167,7 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
                                 return Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: buildSubNewsItem(newsData),
+                                    child: _buildSubNewsItem(context, newsData, isMobile),
                                   ),
                                 );
                               }).toList(),
