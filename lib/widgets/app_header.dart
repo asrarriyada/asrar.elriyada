@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import '../category_news_screen.dart';
 import '../category_videos_screen.dart';
 import '../about_screen.dart';
@@ -150,9 +153,23 @@ class AppHeader extends StatelessWidget {
   Widget _buildHomeItem(BuildContext context, String title) {
     return InkWell(
       onTap: () {
-        Navigator.pushReplacement(
+        if (kIsWeb) {
+          try {
+            // استخراج النطاق الأساسي فقط وإعادة توجيه المتصفح لتنظيف الـ ID والـ Query Parameters تماماً
+            final currentUri = Uri.parse(html.window.location.href);
+            final cleanOrigin = '${currentUri.scheme}://${currentUri.authority}${currentUri.path}';
+            html.window.location.href = cleanOrigin;
+            return;
+          } catch (_) {}
+        }
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+            transitionDuration: Duration.zero,
+          ),
+          (route) => false,
         );
       },
       borderRadius: BorderRadius.circular(3),
@@ -197,7 +214,7 @@ class AppHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoNavItem(BuildContext context, String title) {
+  Widget _buildVideoNavItem(BuildContext context, String title, {bool isHighlight = false}) {
     return InkWell(
       onTap: () {
         Navigator.push(
