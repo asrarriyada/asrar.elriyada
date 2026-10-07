@@ -32,14 +32,6 @@ class SocialShareButtons extends StatelessWidget {
     }
   }
 
-  // دالة مخصصة لفتح الروابط المباشرة (مثل صفحات التواصل الاجتماعي)
-  Future<void> _launchDirectUrl(BuildContext context, String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     String baseTargetUrl = 'https://asrarriyada.github.io/asrar.elriyada/';
@@ -68,14 +60,11 @@ class SocialShareButtons extends StatelessWidget {
     final encodedUrl = Uri.encodeComponent(targetUrl);
     final encodedTitle = Uri.encodeComponent(newsTitle.isNotEmpty ? newsTitle : 'أسرار الرياضة');
 
-    // روابط المشاركة للمنصات الأخرى
+    // روابط المشاركة المباشرة والصحيحة لكل منصة
+    final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
     final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
     final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
-    
-    // روابط الصفحات الرسمية للموقع
-    final facebookPageUrl = 'https://www.facebook.com/asrarelryiada';
-    final instagramUrl = 'https://www.instagram.com/asrarelryida2026/';
 
     final fullShareText = '${newsTitle.isNotEmpty ? newsTitle : "أسرار الرياضة"}\n$targetUrl';
 
@@ -90,7 +79,7 @@ class SocialShareButtons extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'نشر الخبر سريعاً ومتابعة المنصات:',
+            'نشر الخبر سريعاً على المنصات:',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
@@ -106,19 +95,13 @@ class SocialShareButtons extends StatelessWidget {
                 title: 'فيسبوك',
                 icon: Icons.facebook,
                 color: const Color(0xFF1877F2),
-                onTap: () => _launchDirectUrl(context, facebookPageUrl),
+                onTap: () => _launchShareUrl(context, facebookUrl, 'فيسبوك', fullShareText),
               ),
               _buildShareButton(
                 title: 'تويتر (X)',
                 icon: Icons.close,
                 color: Colors.black,
                 onTap: () => _launchShareUrl(context, twitterUrl, 'تويتر', fullShareText),
-              ),
-              _buildShareButton(
-                title: 'انستجرام',
-                icon: Icons.camera_alt,
-                color: const Color(0xFFE1306C),
-                onTap: () => _launchDirectUrl(context, instagramUrl),
               ),
               _buildShareButton(
                 title: 'واتساب',
