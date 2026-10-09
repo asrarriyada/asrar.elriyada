@@ -48,7 +48,6 @@ class SocialShareButtons extends StatelessWidget {
       baseTargetUrl = newsUrl;
     }
     
-    // ضبط وتوجيه الرابط ليعمل بسلاسة عبر Vercel API مع الـ ID الحقيقي
     String targetUrl = baseTargetUrl;
     if (targetUrl.contains('?id=')) {
       final newsId = targetUrl.split('?id=').last;
@@ -60,11 +59,11 @@ class SocialShareButtons extends StatelessWidget {
     final encodedUrl = Uri.encodeComponent(targetUrl);
     final encodedTitle = Uri.encodeComponent(newsTitle.isNotEmpty ? newsTitle : 'أسرار الرياضة');
 
-    // روابط المشاركة المباشرة والصحيحة لكل منصة
     final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=$encodedUrl';
     final twitterUrl = 'https://twitter.com/intent/tweet?text=$encodedTitle&url=$encodedUrl';
     final whatsappUrl = 'https://api.whatsapp.com/send?text=$encodedTitle%20$encodedUrl';
     final telegramUrl = 'https://t.me/share/url?url=$encodedUrl&text=$encodedTitle';
+    final instagramUrl = 'https://www.instagram.com'; // أو رابط صفحة انستجرام الخاصة بالموقع
 
     final fullShareText = '${newsTitle.isNotEmpty ? newsTitle : "أسرار الرياضة"}\n$targetUrl';
 
@@ -114,6 +113,12 @@ class SocialShareButtons extends StatelessWidget {
                 icon: Icons.send,
                 color: const Color(0xFF0088cc),
                 onTap: () => _launchShareUrl(context, telegramUrl, 'تليجرام', fullShareText),
+              ),
+              _buildShareButton(
+                title: 'انستجرام',
+                icon: Icons.camera_alt,
+                color: const Color(0xFFE4405F),
+                onTap: () => _launchShareUrl(context, instagramUrl, 'انستجرام', fullShareText),
               ),
             ],
           ),
