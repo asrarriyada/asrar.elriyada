@@ -25,6 +25,15 @@ class _AllMatchesScreenState extends State<AllMatchesScreen> {
     }
   }
 
+  // دالة لتنسيق وعرض وقت المباراة
+  String _formatMatchTime(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+    DateTime dt = timestamp.toDate();
+    String hour = dt.hour.toString().padLeft(2, '0');
+    String minute = dt.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   // دالة لاختيار تاريخ من التقويم (لتصفح شهر كامل أو أي يوم سابق)
   Future<void> _pickDate(BuildContext context) async {
     DateTime initialDate = DateTime.now();
@@ -120,14 +129,14 @@ class _AllMatchesScreenState extends State<AllMatchesScreen> {
                       if (availableDates.contains(todayStr)) {
                         _selectedFilterDate = todayStr;
                       } else {
-                        _selectedFilterDate = availableDates.last; // آخر يوم متوفر فيه مباريات (مثل أمس 27)
+                        _selectedFilterDate = availableDates.last; 
                       }
                       _isDateInitialized = true;
                     }
 
                     return Row(
                       children: [
-                        // زر اختيار تاريخ مخصص (أيام سابقة، شهر، إلخ...)
+                        // زر اختيار تاريخ مخصص
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFB71C1C),
@@ -215,7 +224,7 @@ class _AllMatchesScreenState extends State<AllMatchesScreen> {
                               dataRowMaxHeight: 60,
                               columns: const [
                                 DataColumn(label: Text('اليوم')),
-                                DataColumn(label: Text('التاريخ')),
+                                DataColumn(label: Text('التاريخ والوقت')), // تم تعديل العنوان ليوضح احتواء الوقت
                                 DataColumn(label: Text('الفريق الأول')),
                                 DataColumn(label: Text('النتيجة')),
                                 DataColumn(label: Text('الفريق الثاني')),
@@ -226,11 +235,26 @@ class _AllMatchesScreenState extends State<AllMatchesScreen> {
                                 final data = doc.data() as Map<String, dynamic>;
                                 String dateStr = data['date'] ?? '';
                                 String dayName = _getDayName(dateStr);
+                                String timeStr = _formatMatchTime(data['startTime']);
 
                                 return DataRow(
                                   cells: [
                                     DataCell(Text(dayName, style: const TextStyle(fontWeight: FontWeight.bold))),
-                                    DataCell(Text(dateStr)),
+                                    // عرض التاريخ وتحته الوقت بشكل منسق دون الإخلال بالشكل
+                                    DataCell(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(dateStr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                          if (timeStr.isNotEmpty)
+                                            Text(
+                                              timeStr,
+                                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
                                     DataCell(Text(data['teamA'] ?? 'الفريق الأول', style: const TextStyle(fontWeight: FontWeight.bold))),
                                     DataCell(
                                       Container(
