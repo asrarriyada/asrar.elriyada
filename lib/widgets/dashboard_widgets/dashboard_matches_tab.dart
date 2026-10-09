@@ -23,6 +23,9 @@ class _DashboardMatchesTabState extends State<DashboardMatchesTab> {
   DateTime _selectedMatchDateTime = DateTime.now();
 
   String? _editingMatchId;
+  
+  // متغير للتحكم في إظهار أو إخفاء المباريات المنتهية (الأرشيف)
+  bool _showArchivedMatches = false;
 
   void _clearForm() {
     _customLeagueController.clear();
@@ -246,8 +249,30 @@ class _DashboardMatchesTabState extends State<DashboardMatchesTab> {
               ),
             ),
             const SizedBox(height: 30),
-            const Text('قائمة المباريات المسجلة:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            
+            // --- عنوان القائمة وزر إظهار/إخفاء الأرشيف ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('قائمة المباريات المسجلة:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _showArchivedMatches ? Colors.grey.shade700 : Colors.grey.shade200,
+                    foregroundColor: _showArchivedMatches ? Colors.white : Colors.black87,
+                    elevation: 0,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showArchivedMatches = !_showArchivedMatches;
+                    });
+                  },
+                  icon: Icon(_showArchivedMatches ? Icons.visibility_off : Icons.visibility, size: 18),
+                  label: Text(_showArchivedMatches ? 'إخفاء المباريات المنتهية' : 'إظهار المباريات المنتهية (الأرشيف)'),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
+
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('matches').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
@@ -262,7 +287,21 @@ class _DashboardMatchesTabState extends State<DashboardMatchesTab> {
                   return const Text('لا توجد مباريات مضافة حالياً.', style: TextStyle(color: Colors.grey));
                 }
 
-                final docs = snapshot.data!.docs;
+                // --- الفلترة بحسب الزر: إذا لم يتم تفعيل عرض الأرشيف، يتم استبعاد المنتهية ---
+                final docs = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  if (!_showArchivedMatches) {
+                    return data['status'] != 'انتهت'; // إخفاء المنتهية افتراضياً
+                  }
+                  return true; // إظهار الكل إذا تم الضغط على زر إظهار الأرشيف
+                }).toList();
+
+                if (docs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                    child: Text('لا توجد مباريات نشطة حالياً (تم إخفاء المباريات المنتهية).', style: TextStyle(color: Colors.grey)),
+                  );
+                }
 
                 return ListView.builder(
                   shrinkWrap: true,
@@ -271,23 +310,31 @@ class _DashboardMatchesTabState extends State<DashboardMatchesTab> {
                   itemBuilder: (context, index) {
                     final doc = docs[index];
                     final data = doc.data() as Map<String, dynamic>;
+                    final bool isFinished = data['status'] == 'انتهت';
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 10),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: Colors.grey.shade300),
+                        side: BorderSide(
+                          color: isFinished ? Colors.grey.shade400 : Colors.grey.shade300,
+                        ),
                       ),
+                      color: isFinished ? Colors.grey.shade50 : Colors.white, // تمييز المباريات المنتهية بلون خفيف
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         title: Text(
                           '${data['teamA']} (${data['scoreA'] ?? 0})  VS  (${data['scoreB'] ?? 0}) ${data['teamB']}', 
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold, 
+                            fontSize: 15,
+                            color: isFinished ? Colors.grey.shade700 : Colors.black87,
+                          ),
                         ),
                         subtitle: Text(
                           'البطولة: ${data['league']} | الرياضة: ${data['sportType']} | الحالة: ${data['status']}',
-                          style: const TextStyle(color: Colors.grey, fontSize: 13),
+                          style: TextStyle(color: isFinished ? Colors.grey.shade500 : Colors.grey, fontSize: 13),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -301,6 +348,7 @@ class _DashboardMatchesTabState extends State<DashboardMatchesTab> {
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () async {
                                 await FirebaseFirestore.instance.collection('matches').doc(doc.id).delete();
+                                if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('تم حذف المباراة بنجاح'), backgroundColor: Colors.red),
                                 );
