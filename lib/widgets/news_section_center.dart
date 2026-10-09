@@ -26,7 +26,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     );
   }
 
-  // تم نقل الدالة إلى الخارج هنا لمنع إعادة إنشائها بلا داعي مع كل رندر
   Widget _buildSubNewsItem(BuildContext context, Map<String, dynamic> newsData, bool isMobile) {
     return InkWell(
       onTap: () => _openNewsDetails(context, newsData),
@@ -89,8 +88,13 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 900;
 
+    // اعتماد الترتيب التنازلي المباشر من فايربيس باستخدام createdAt لضمان دقة الأحدث
+    var query = FirebaseFirestore.instance
+        .collection('news')
+        .orderBy('createdAt', descending: true);
+
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('news').snapshots(),
+      stream: query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -196,6 +200,10 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
 
   Widget _buildNewsImage(dynamic img) {
     String url = (img ?? '').toString().trim();
+    
+    // تنظيف الرابط من أي علامات تنصيص أو مسافات زائدة
+    url = url.replaceAll('"', '').replaceAll("'", "").trim();
+
     if (url.startsWith('data:image')) {
       try {
         final base64Str = url.split(',').last;
@@ -207,13 +215,31 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         );
       } catch (_) {}
     }
+
     if (url.isNotEmpty && url.startsWith('http')) {
       return Image.network(
         url,
         fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                    : null,
+                color: const Color(0xFFB71C1C),
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        },
         errorBuilder: (context, error, stackTrace) => _errorImagePlaceholder(),
       );
     }
+    
     return _errorImagePlaceholder();
   }
 
