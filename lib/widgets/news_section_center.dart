@@ -15,20 +15,26 @@ class NewsSectionCenter extends StatefulWidget {
 }
 
 class _NewsSectionCenterState extends State<NewsSectionCenter> {
-  void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData) {
+  void _openNewsDetails(BuildContext context, Map<String, dynamic> newsData, String docId) {
     final title = newsData['title'] ?? '';
     
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DirectArticleScreen(articleTitle: title),
+        builder: (context) => DirectArticleScreen(
+          articleTitle: title,
+          documentId: docId, // تمرير المعرف الفريد لفتح الخبر الصحيح بدقة
+        ),
       ),
     );
   }
 
-  Widget _buildSubNewsItem(BuildContext context, Map<String, dynamic> newsData, bool isMobile) {
+  Widget _buildSubNewsItem(BuildContext context, DocumentSnapshot doc, bool isMobile) {
+    final newsData = doc.data() as Map<String, dynamic>;
+    final docId = doc.id;
+
     return InkWell(
-      onTap: () => _openNewsDetails(context, newsData),
+      onTap: () => _openNewsDetails(context, newsData, docId),
       child: Container(
         height: isMobile ? 85 : null,
         margin: const EdgeInsets.only(bottom: 6),
@@ -88,7 +94,6 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 900;
 
-    // اعتماد الترتيب التنازلي المباشر من فايربيس باستخدام createdAt لضمان دقة الأحدث
     var query = FirebaseFirestore.instance
         .collection('news')
         .orderBy('createdAt', descending: true);
@@ -125,7 +130,13 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         }
 
         final newsDocs = snapshot.data!.docs;
-        final sliderNewsList = newsDocs.take(10).map((doc) => doc.data() as Map<String, dynamic>).toList();
+        
+        final sliderNewsList = newsDocs.take(10).map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id; // دمج الـ ID مع بيانات السلايدر لضمان دقة النقر
+          return data;
+        }).toList();
+
         final subNews = newsDocs.skip(1).take(4).toList();
         final titlesList = newsDocs.map((doc) => (doc.data() as Map<String, dynamic>)['title'] ?? '').toList().cast<String>();
 
@@ -144,11 +155,13 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
                           height: 240,
                           child: MainNewsSlider(
                             sliderNewsList: sliderNewsList,
-                            onNewsTap: _openNewsDetails,
+                            onNewsTap: (context, newsData) {
+                              _openNewsDetails(context, newsData, newsData['id'] ?? '');
+                            },
                           ),
                         ),
                         const SizedBox(height: 10),
-                        ...subNews.map((doc) => _buildSubNewsItem(context, doc.data() as Map<String, dynamic>, isMobile)),
+                        ...subNews.map((doc) => _buildSubNewsItem(context, doc, isMobile)),
                       ],
                     )
                   : Container(
@@ -167,11 +180,10 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: subNews.map((doc) {
-                                final newsData = doc.data() as Map<String, dynamic>;
                                 return Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: _buildSubNewsItem(context, newsData, isMobile),
+                                    child: _buildSubNewsItem(context, doc, isMobile),
                                   ),
                                 );
                               }).toList(),
@@ -184,7 +196,9 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
                               height: 364,
                               child: MainNewsSlider(
                                 sliderNewsList: sliderNewsList,
-                                onNewsTap: _openNewsDetails,
+                                onNewsTap: (context, newsData) {
+                                  _openNewsDetails(context, newsData, newsData['id'] ?? '');
+                                },
                               ),
                             ),
                           ),
@@ -198,12 +212,10 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
     );
   }
 
+  // دالة عرض الصور السليمة تماماً والتي كانت تعمل سابقاً
   Widget _buildNewsImage(dynamic img) {
     String url = (img ?? '').toString().trim();
     
-    // تنظيف الرابط من أي علامات تنصيص أو مسافات زائدة
-    url = url.replaceAll('"', '').replaceAll("'", "").trim();
-
     if (url.startsWith('data:image')) {
       try {
         final base64Str = url.split(',').last;
@@ -215,27 +227,11 @@ class _NewsSectionCenterState extends State<NewsSectionCenter> {
         );
       } catch (_) {}
     }
-
+    
     if (url.isNotEmpty && url.startsWith('http')) {
       return Image.network(
         url,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                    : null,
-                color: const Color(0xFFB71C1C),
-                strokeWidth: 2,
-              ),
-            ),
-          );
-        },
         errorBuilder: (context, error, stackTrace) => _errorImagePlaceholder(),
       );
     }
