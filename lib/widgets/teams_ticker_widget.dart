@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../category_news_screen.dart';
+import '../screens/club_details_screen.dart';
 
 class TeamsTickerWidget extends StatefulWidget {
   const TeamsTickerWidget({super.key});
@@ -12,91 +12,37 @@ class _TeamsTickerWidgetState extends State<TeamsTickerWidget> {
   final ScrollController _scrollController = ScrollController();
 
   final List<Map<String, String>> teams = const [
-    {
-      'name': 'الاتحاد المصري لكرة القدم',
-      'logo': 'assets/images/teams/egypt-national.png'
-    },
-    {
-      'name': 'أبو قير للأسمدة',
-      'logo': 'assets/images/teams/abu_qir.png'
-    },
-    {
-      'name': 'الاتحاد السكندري',
-      'logo': 'assets/images/teams/al_ittihad.png'
-    },
-    {
-      'name': 'الأهلي',
-      'logo': 'assets/images/teams/al-ahly.png'
-    },
-    {
-      'name': 'البنك الأهلي',
-      'logo': 'assets/images/teams/national-bank.png'
-    },
-    {
-      'name': 'الجونة',
-      'logo': 'assets/images/teams/el-gouna.png'
-    },
-    {
-      'name': 'الزمالك',
-      'logo': 'assets/images/teams/zamalek_sc.png'
-    },
-    {
-      'name': 'الشرقية إنبي',
-      'logo': 'assets/images/teams/sharkia_enppi.png'
-    },
-    {
-      'name': 'القناة',
-      'logo': 'assets/images/teams/el_qanah.png'
-    },
-    {
-      'name': 'المصري',
-      'logo': 'assets/images/teams/al-masry.png'
-    },
-    {
-      'name': 'المقاولون العرب',
-      'logo': 'assets/images/teams/al_mokawloon.png'
-    },
-    {
-      'name': 'بترول أسيوط',
-      'logo': 'assets/images/teams/asyut-petroleum.png'
-    },
-    {
-      'name': 'بيراميدز',
-      'logo': 'assets/images/teams/pyramids.png'
-    },
-    {
-      'name': 'سيراميكا كليوباترا',
-      'logo': 'assets/images/teams/ceramica_cleopatra.png'
-    },
-    {
-      'name': 'سموحة',
-      'logo': 'assets/images/teams/smouha.png'
-    },
-    {
-      'name': 'طلائع الجيش',
-      'logo': 'assets/images/teams/talaea-el-gaish.png'
-    },
-    {
-      'name': 'غزل المحلة',
-      'logo': 'assets/images/teams/ghazal_el_mahalla.png'
-    },
-    {
-      'name': 'مودرن سبورت',
-      'logo': 'assets/images/teams/modern_sport.png'
-    },
-    {
-      'name': 'منتخب السويس بتروجت',
-      'logo': 'assets/images/teams/Montakhab_El-Suez_Petrojet.jpg'
-    },
-    {
-      'name': 'وادي دجلة',
-      'logo': 'assets/images/teams/wadi-degla.png'
-    },
-    {
-      'name': 'زد',
-      'logo': 'assets/images/teams/zed-fc.png'
-    },
+    {'name': 'الاتحاد المصري لكرة القدم', 'logo': 'assets/images/teams/egypt-national.png'},
+    {'name': 'أبو قير للأسمدة', 'logo': 'assets/images/teams/abu_qir.png'},
+    {'name': 'الاتحاد السكندري', 'logo': 'assets/images/teams/al_ittihad.png'},
+    {'name': 'الأهلي', 'logo': 'assets/images/teams/al-ahly.png'},
+    {'name': 'البنك الأهلي', 'logo': 'assets/images/teams/national-bank.png'},
+    {'name': 'الجونة', 'logo': 'assets/images/teams/el-gouna.png'},
+    {'name': 'الزمالك', 'logo': 'assets/images/teams/zamalek_sc.png'},
+    {'name': 'الشرقية إنبي', 'logo': 'assets/images/teams/sharkia_enppi.png'},
+    {'name': 'القناة', 'logo': 'assets/images/teams/el_qanah.png'},
+    {'name': 'المصري', 'logo': 'assets/images/teams/al-masry.png'},
+    {'name': 'المقاولون العرب', 'logo': 'assets/images/teams/al_mokawloon.png'},
+    {'name': 'بترول أسيوط', 'logo': 'assets/images/teams/asyut-petroleum.png'},
+    {'name': 'بيراميدز', 'logo': 'assets/images/teams/pyramids.png'},
+    {'name': 'سيراميكا كليوباترا', 'logo': 'assets/images/teams/ceramica_cleopatra.png'},
+    {'name': 'سموحة', 'logo': 'assets/images/teams/smouha.png'},
+    {'name': 'طلائع الجيش', 'logo': 'assets/images/teams/talaea-el-gaish.png'},
+    {'name': 'غزل المحلة', 'logo': 'assets/images/teams/ghazal_el_mahalla.png'},
+    {'name': 'مودرن سبورت', 'logo': 'assets/images/teams/modern_sport.png'},
+    {'name': 'منتخب السويس بتروجت', 'logo': 'assets/images/teams/Montakhab_El-Suez_Petrojet.jpg'},
+    {'name': 'وادي دجلة', 'logo': 'assets/images/teams/wadi-degla.png'},
+    {'name': 'زد', 'logo': 'assets/images/teams/zed-fc.png'},
   ];
+
+  String _getClubId(String name) {
+    if (name == 'الاتحاد المصري لكرة القدم') return 'egypt_football_association';
+    if (name == 'أبو قير للأسمدة') return 'abu_qir';
+    if (name == 'الاتحاد السكندري') return 'al_ittihad';
+    if (name == 'الأهلي') return 'al_ahly';
+    if (name == 'الزمالك') return 'zamalek';
+    return name.replaceAll(' ', '_').toLowerCase();
+  }
 
   void _scroll(bool right) {
     final double offset = right ? 250 : -250;
@@ -115,9 +61,7 @@ class _TeamsTickerWidgetState extends State<TeamsTickerWidget> {
       height: 55,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 1)),
       ),
       child: Directionality(
         textDirection: TextDirection.rtl,
@@ -139,15 +83,11 @@ class _TeamsTickerWidgetState extends State<TeamsTickerWidget> {
                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     child: InkWell(
                       onTap: () {
+                        final clubId = _getClubId(team['name']!);
                         Navigator.push(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                CategoryNewsScreen(categoryName: team['name']!),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              return child;
-                            },
-                            transitionDuration: Duration.zero,
+                          MaterialPageRoute(
+                            builder: (context) => ClubDetailsScreen(clubId: clubId),
                           ),
                         );
                       },

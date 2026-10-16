@@ -5,7 +5,8 @@ import 'login_screen.dart';
 import 'add_news_page.dart';
 import 'widgets/dashboard_widgets/dashboard_matches_tab.dart';
 import 'widgets/dashboard_widgets/dashboard_social_tab.dart';
-import 'widgets/dashboard_videos_tab.dart'; // <--- المسار الصحيح للملف في مجلد widgets
+import 'widgets/dashboard_videos_tab.dart';
+import 'widgets/dashboard_widgets/dashboard_clubs_tab.dart'; // <--- استيراد صفحة إدارة الأندية الجديدة
 
 class DashboardScreen extends StatefulWidget {
   final bool isAdminMaster;
@@ -284,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    // 4. قسم الفيديوهات والصور الجديد
+    // 4. قسم الفيديوهات والصور
     pages.add(const DashboardVideosTab());
     destinations.add(
       const NavigationRailDestination(icon: Icon(Icons.video_library), label: Text('فيديوهات وصور')),
@@ -296,7 +297,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const NavigationRailDestination(icon: Icon(Icons.forum), label: Text('السوشيال ميديا')),
     );
 
-    // 6. إدارة المشرفين (للأدمن الرئيسي Master فقط)
+    // 6. قسم الأندية والاتحادات الجديد
+    pages.add(const DashboardClubsTab());
+    destinations.add(
+      const NavigationRailDestination(icon: Icon(Icons.shield), label: Text('الأندية')),
+    );
+
+    // 7. إدارة المشرفين (للأدمن الرئيسي Master فقط)
     if (widget.isAdminMaster) {
       pages.add(
         Padding(
